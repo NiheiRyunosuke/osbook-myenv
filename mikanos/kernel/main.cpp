@@ -57,6 +57,8 @@ void operator delete(void* obj) noexcept{
 char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
 PixelWriter* pixel_writer;
 
+
+
 extern "C" __attribute__((ms_abi))
 void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   __asm__("cli");
