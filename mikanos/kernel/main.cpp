@@ -76,6 +76,19 @@ const uint8_t kFontA[16] = {
   0b00000000, //
 };
 
+void WriteAscii(PixelWriter& writer, int x, int y, char c, const PixelColor& color) {
+  if (c != 'A') {
+    return;
+  }
+  for (int dy = 0; dy < 16; ++dy) {
+    for (int dx = 0; dx < 8; ++dx) {
+      if ((kFontA[dy] << dx) & 0x80u) {
+        writer.Write(x + dx, y + dy, color);
+      }
+    }
+  }
+}
+
 extern "C" __attribute__((ms_abi))
 void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   __asm__("cli");
@@ -101,6 +114,9 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
       pixel_writer->Write(x, y, {0, 255, 0});
     }
   }
+
+  WriteAscii(*pixel_writer, 50, 50, 'A', {0, 0, 0});
+  WriteAscii(*pixel_writer, 58, 50, 'A', {0, 0, 0});
 
   while (1) {
     __asm__("hlt");
