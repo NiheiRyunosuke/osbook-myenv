@@ -54,6 +54,7 @@ void* operator new(size_t size, void* buf) {
 void operator delete(void* obj) noexcept{
 }
 
+
 char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
 PixelWriter* pixel_writer;
 
