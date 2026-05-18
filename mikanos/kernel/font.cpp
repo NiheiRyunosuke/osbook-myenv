@@ -22,12 +22,13 @@ const uint8_t kFontA[16] = {
 
 
 void WriteAscii(PixelWriter& writer, int x, int y, char c, const PixelColor& color) {
-  if (c != 'A') {
+  const uint8_t* font = GetFont(c);
+  if (font == nullptrc) {
     return;
   }
   for (int dy = 0; dy < 16; ++dy) {
     for (int dx = 0; dx < 8; ++dx) {
-      if ((kFontA[dy] << dx) & 0x80u) {
+      if ((font[dy] << dx) & 0x80u) {
         writer.Write(x + dx, y + dy, color);
       }
     }
