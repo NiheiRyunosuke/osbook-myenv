@@ -1,25 +1,6 @@
 #include "font.hpp"
 #include "graphics.hpp"
 
-const uint8_t kFontA[16] = {
-  0b00000000, //
-  0b00011000, //    **
-  0b00011000, //    **
-  0b00011000, //    **
-  0b00011000, //    **
-  0b00100100, //   *  *
-  0b00100100, //   *  *
-  0b00100100, //   *  *
-  0b00100100, //   *  *
-  0b01111110, //  ******
-  0b01000010, //  *    *
-  0b01000010, //  *    *
-  0b01000010, //  *    *
-  0b11100111, // ***  ***
-  0b00000000, // 
-  0b00000000, //
-};
-
 extern const uint8_t _binary_hankaku_bin_start;
 extern const uint8_t _binary_hankaku_bin_end;
 extern const uint8_t _binary_hankaku_bin_size;
