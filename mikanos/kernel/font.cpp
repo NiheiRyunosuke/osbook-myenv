@@ -23,7 +23,7 @@ const uint8_t kFontA[16] = {
 
 void WriteAscii(PixelWriter& writer, int x, int y, char c, const PixelColor& color) {
   const uint8_t* font = GetFont(c);
-  if (font == nullptrc) {
+  if (font == nullptr) {
     return;
   }
   for (int dy = 0; dy < 16; ++dy) {
