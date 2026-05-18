@@ -40,8 +40,15 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
     }
   }
 
-  WriteAscii(*pixel_writer, 50, 50, 'A', {0, 0, 0});
-  WriteAscii(*pixel_writer, 58, 50, 'A', {0, 0, 0});
+  const int left = 8;
+  const int top = 8;
+  const int cols = 16;
+  for (int i = 0; i < 256; ++i) {
+    const int x = left + 8 * (i % cols);
+    const int y = top + 16 * (i / cols);
+    WriteAscii(*pixel_writer, x, y, static_cast<char>(i), {0, 0, 0});
+  }
+
 
   while (1) {
     __asm__("hlt");
