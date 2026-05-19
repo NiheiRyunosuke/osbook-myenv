@@ -1,3 +1,6 @@
+#include "font.hpp"
+#include "console.hpp"
+
 Console::Console(PixelWriter& writer,
     const PixelColor& fg_color, const PixelColor& bg_color)
     : writer_{writer}, fg_color_{fg_color}, bg_color_{bg_color},
@@ -23,7 +26,7 @@ void Console::Newline() {
     ++cursor_row_;
   } else {
     for (int y = 0; y< 16 * kRows; ++ y) {
-      for int x = 0; x < 8 * kColumns; ++x {
+      for (int x = 0; x < 8 * kColumns; ++x) {
         writer_.Write(x, y, bg_color_);
         }
     }
