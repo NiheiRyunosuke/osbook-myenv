@@ -13,7 +13,7 @@ clean:
 	rm -f *.o *.bin kernel.elf
 
 kernel.elf: $(OBJS) Makefile
-	ld.lld $(LDFLAGS) -o kernel.elf $(OBJS)
+	ld.lld $(LDFLAGS) -o kernel.elf $(OBJS) -lc -lc++ -lc++abi -lm
 
 
 %.o: %.cpp Makefile
