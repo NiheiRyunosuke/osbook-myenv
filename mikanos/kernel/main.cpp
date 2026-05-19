@@ -19,6 +19,19 @@ PixelWriter* pixel_writer;
 char console_buf[sizeof(Console)];
 Console* console;
 
+int printk(const char* format, ...) {
+  va_list ap;
+  int result;
+  char s[1024];
+
+  va_start(ap, format);
+  result =vsprintf(s, format, ap);
+  va_end(ap);
+
+  console->PutString(s);
+  return result;
+}
+
 extern "C" __attribute__((ms_abi))
 void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   __asm__("cli");
@@ -42,10 +55,8 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
 
   console = new(console_buf) Console{*pixel_writer, {0, 0, 0}, {255, 255, 255}};
 
-  char buf[32];
-  for (int i = 0; i < 30; ++i) {
-    sprintf(buf, "line %d\n", i);
-    console->PutString(buf);
+  for (int i = 0; i < 27; ++i) {
+    printk("printk: %d\n", i);
   }
 
   while (1) {
