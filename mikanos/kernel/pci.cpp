@@ -6,6 +6,9 @@
 
 #include "pci.hpp"
 
+namespace {
+  using namespace pci;
+
 /** @brief CONFIG_ADDRESS 用の 32 ビット整数を生成する */
 uint32_t MakeAddress(uint8_t bus, uint8_t device,
                     uint8_t function, uint8_t reg_addr){
@@ -35,4 +38,27 @@ uint32_t ReadData() {
 uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
   WriteAddress(MakeAddress(bus, device, function, 0x00));
   return ReadData() & 0xffffu;
+}
+
+Error ScanAllBus() {
+  num_device = 0;
+
+  auto header_type = ReadHeaderType(0, 0, 0);
+  if (IsSingleFunctionDevice(header_type)) {
+    return ScanBus(0);
+  }
+
+  for (uint8_t function = 1; function < 8; ++function) {
+    if (ReadVendorId(0, 0, function) == 0xffffu) {
+      continue;
+    }
+    if (auto err = ScanBus(function)) {
+      return err;
+    }
+  }
+  return Error::kSuccess;
+}
+
+
+
 }
