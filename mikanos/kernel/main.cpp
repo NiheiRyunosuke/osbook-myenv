@@ -13,7 +13,6 @@ void* operator new(size_t size, void* buf) {
 void operator delete(void* obj) noexcept{
 }
 
-
 const int kMouseCursorWidth = 15;
 const int kMouseCursorHeight = 24;
 const char mouse_cursor_shape[kMouseCursorHeight][kMouseCursorWidth + 1] = {
@@ -76,7 +75,6 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
         BGRResv8BitPerColorPixelWriter{frame_buffer_config};
       break;
   }
-
 
   for (int x = 0; x < static_cast<int>(frame_buffer_config.horizontal_resolution); ++x) {
     for (int y = 0; y < static_cast<int>(frame_buffer_config.vertical_resolution); ++y) {
