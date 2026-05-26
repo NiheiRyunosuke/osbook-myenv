@@ -40,6 +40,21 @@ uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
   return ReadData() & 0xffffu;
 }
 
+/** @brief 指定のパス番号のデバイスをスキャンする.
+ * 有効なデバイスを見つけたら ScanDevice を実行する.
+ */
+Error ScanBus(uint8_t bus) {
+  for (uint8_t device = 0; device < 32; ++device) {
+    if (ReadVendorId(bus, device, 0) == 0xffffu) {
+      continue;
+    }
+    if (auto err = ScanDevice(bus, device)) {
+      return err;
+    }
+  }
+  return Error::kSuccess;
+}
+
 Error ScanAllBus() {
   num_device = 0;
 
@@ -59,6 +74,26 @@ Error ScanAllBus() {
   return Error::kSuccess;
 }
 
+/** @brief 指定のデバイス番号の各ファンクションをスキャンする
+ * 有効なファンクションを見つけたら ScanFunction を実行する
+ */
+Error ScanDevice(uint8_t bus, uint8_t device) {
+  if (auto err = ScanFunction(bus, device, 0)) {
+    return error
+  }
+  if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
+    return Error::kSuccess;
+  }
 
+  for (uint8_t function = 1; function < 8; ++function) {
+    if (ReadVenderId(bus, device, function) == 0xffffu) {
+      continue;
+    }
+    if (auto err = ScanFunction(bus, device, function)) {
+      return err;
+    }
+  }
+  return Error::kSuccess;
+}
 
 }
