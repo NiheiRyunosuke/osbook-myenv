@@ -55,6 +55,18 @@ Error ScanBus(uint8_t bus) {
   return Error::kSuccess;
 }
 
+/** @brief devices[num_devices]に情報を書き込み num_device をインクリメントする*/
+Error AddDevice(uint8_t bus, uint8_t device,
+                uint8_t function, uint8_t header_type) {
+  if (num_device == devices.size()) {
+    return Error::kFull;
+  }
+
+  devices[num_device] = Device{bus, device, function, header_type};
+  ++num_device;
+  return Error::kSuccess;
+}
+
 /** @brief 指定のファンクションを devices に追加する.
  * もし PCI-PCI ブリッジなら、セカンダリバスに対し、ScanBusを実行する
  */
