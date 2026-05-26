@@ -55,15 +55,25 @@ Error ScanBus(uint8_t bus) {
   return Error::kSuccess;
 }
 
-/** @brief devices[num_devices]に情報を書き込み num_device をインクリメントする*/
-Error AddDevice(uint8_t bus, uint8_t device,
-                uint8_t function, uint8_t header_type) {
-  if (num_device == devices.size()) {
-    return Error::kFull;
+/** @brief 指定のデバイス番号の各ファンクションをスキャンする
+ * 有効なファンクションを見つけたら ScanFunction を実行する
+ */
+Error ScanDevice(uint8_t bus, uint8_t device) {
+  if (auto err = ScanFunction(bus, device, 0)) {
+    return err;
+  }
+  if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
+    return Error::kSuccess;
   }
 
-  devices[num_device] = Device{bus, device, function, header_type};
-  ++num_device;
+  for (uint8_t function = 1; function < 8; ++function) {
+    if (ReadVendorId(bus, device, function) == 0xffffu) {
+      continue;
+    }
+    if (auto err = ScanFunction(bus, device, function)) {
+      return err;
+    }
+  }
   return Error::kSuccess;
 }
 
@@ -90,6 +100,19 @@ Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
   return Error::kSuccess;
 }
 
+/** @brief devices[num_devices]に情報を書き込み num_device をインクリメントする*/
+Error AddDevice(uint8_t bus, uint8_t device,
+                uint8_t function, uint8_t header_type) {
+  if (num_device == devices.size()) {
+    return Error::kFull;
+  }
+
+  devices[num_device] = Device{bus, device, function, header_type};
+  ++num_device;
+  return Error::kSuccess;
+}
+
+
 Error ScanAllBus() {
   num_device = 0;
 
@@ -103,28 +126,6 @@ Error ScanAllBus() {
       continue;
     }
     if (auto err = ScanBus(function)) {
-      return err;
-    }
-  }
-  return Error::kSuccess;
-}
-
-/** @brief 指定のデバイス番号の各ファンクションをスキャンする
- * 有効なファンクションを見つけたら ScanFunction を実行する
- */
-Error ScanDevice(uint8_t bus, uint8_t device) {
-  if (auto err = ScanFunction(bus, device, 0)) {
-    return err;
-  }
-  if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
-    return Error::kSuccess;
-  }
-
-  for (uint8_t function = 1; function < 8; ++function) {
-    if (ReadVendorId(bus, device, function) == 0xffffu) {
-      continue;
-    }
-    if (auto err = ScanFunction(bus, device, function)) {
       return err;
     }
   }
