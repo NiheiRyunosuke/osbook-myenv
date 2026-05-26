@@ -40,7 +40,7 @@ uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
   return ReadData() & 0xffffu;
 }
 
-/** @brief 指定のパス番号のデバイスをスキャンする.
+/** @brief 指定のバス番号のデバイスをスキャンする.
  * 有効なデバイスを見つけたら ScanDevice を実行する.
  */
 Error ScanBus(uint8_t bus) {
@@ -52,6 +52,29 @@ Error ScanBus(uint8_t bus) {
       return err;
     }
   }
+  return Error::kSuccess;
+}
+
+/** @brief 指定のファンクションを devices に追加する.
+ * もし PCI-PCI ブリッジなら、セカンダリバスに対し、ScanBusを実行する
+ */
+Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
+  auto header_type = ReadHeaderType(bus, device, function);
+  if (auto err = AddDevice(bus, device, function, header_type)) {
+    return err;
+  }
+
+  auto class_code = ReadClassCode(bus, device, function);
+  uint8_t base = (class_code >> 24) & 0xffu;
+  uint8_t sub = (class_code >> 16) & 0xffu;
+
+  if (base == 0x06u && sub == 0x04u) {
+    // standard PCI-PCI bridge
+    auto bus_numbers = ReadBusNumbers(bus, device, function);
+    uint8_t secondary_bus = (bus_numbers >> 8) & 0xffu;
+    return ScanBus(secondary_bus);
+  }
+
   return Error::kSuccess;
 }
 
@@ -79,14 +102,14 @@ Error ScanAllBus() {
  */
 Error ScanDevice(uint8_t bus, uint8_t device) {
   if (auto err = ScanFunction(bus, device, 0)) {
-    return error
+    return err;
   }
   if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
     return Error::kSuccess;
   }
 
   for (uint8_t function = 1; function < 8; ++function) {
-    if (ReadVenderId(bus, device, function) == 0xffffu) {
+    if (ReadVendorId(bus, device, function) == 0xffffu) {
       continue;
     }
     if (auto err = ScanFunction(bus, device, function)) {
