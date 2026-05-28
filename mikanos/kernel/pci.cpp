@@ -5,6 +5,7 @@
  */
 
 #include "pci.hpp"
+#include "asmfunc.h"
 
 namespace {
   using namespace pci;
@@ -23,35 +24,40 @@ uint32_t MakeAddress(uint8_t bus, uint8_t device,
       | (reg_addr & 0xfcu);
     }
 
-void WriteAddress(uint32_t address) {
-  IoOut32(kConfigAddress, address);
-}
-
-void WriteData(uint32_t value) {
-  IoOut32(kConfigData, value);
-}
-
-uint32_t ReadData() {
-  return IoIn32(kConfigData);
-}
-
-uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
-  WriteAddress(MakeAddress(bus, device, function, 0x00));
-  return ReadData() & 0xffffu;
-}
-
-/** @brief 指定のバス番号のデバイスをスキャンする.
- * 有効なデバイスを見つけたら ScanDevice を実行する.
- */
-Error ScanBus(uint8_t bus) {
-  for (uint8_t device = 0; device < 32; ++device) {
-    if (ReadVendorId(bus, device, 0) == 0xffffu) {
-      continue;
-    }
-    if (auto err = ScanDevice(bus, device)) {
-      return err;
-    }
+/** @brief devices[num_device]に情報を書き込み num_device をインクリメントする*/
+Error AddDevice(uint8_t bus, uint8_t device,
+                uint8_t function, uint8_t header_type) {
+  if (num_device == devices.size()) {
+    return Error::kFull;
   }
+
+  devices[num_device] = Device{bus, device, function, header_type};
+  ++num_device;
+  return Error::kSuccess;
+}
+
+Error ScanBus(uint8_t bus);
+
+/** @brief 指定のファンクションを devices に追加する.
+ * もし PCI-PCI ブリッジなら、セカンダリバスに対し、ScanBusを実行する
+ */
+Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
+  auto header_type = ReadHeaderType(bus, device, function);
+  if (auto err = AddDevice(bus, device, function, header_type)) {
+    return err;
+  }
+
+  auto class_code = ReadClassCode(bus, device, function);
+  uint8_t base = (class_code >> 24) & 0xffu;
+  uint8_t sub = (class_code >> 16) & 0xffu;
+
+  if (base == 0x06u && sub == 0x04u) {
+    // standard PCI-PCI bridge
+    auto bus_numbers = ReadBusNumbers(bus, device, function);
+    uint8_t secondary_bus = (bus_numbers >> 8) & 0xffu;
+    return ScanBus(secondary_bus);
+  }
+
   return Error::kSuccess;
 }
 
@@ -77,41 +83,63 @@ Error ScanDevice(uint8_t bus, uint8_t device) {
   return Error::kSuccess;
 }
 
-/** @brief 指定のファンクションを devices に追加する.
- * もし PCI-PCI ブリッジなら、セカンダリバスに対し、ScanBusを実行する
+/** @brief 指定のバス番号のデバイスをスキャンする.
+ * 有効なデバイスを見つけたら ScanDevice を実行する.
  */
-Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
-  auto header_type = ReadHeaderType(bus, device, function);
-  if (auto err = AddDevice(bus, device, function, header_type)) {
-    return err;
+Error ScanBus(uint8_t bus) {
+  for (uint8_t device = 0; device < 32; ++device) {
+    if (ReadVendorId(bus, device, 0) == 0xffffu) {
+      continue;
+    }
+    if (auto err = ScanDevice(bus, device)) {
+      return err;
+    }
   }
-
-  auto class_code = ReadClassCode(bus, device, function);
-  uint8_t base = (class_code >> 24) & 0xffu;
-  uint8_t sub = (class_code >> 16) & 0xffu;
-
-  if (base == 0x06u && sub == 0x04u) {
-    // standard PCI-PCI bridge
-    auto bus_numbers = ReadBusNumbers(bus, device, function);
-    uint8_t secondary_bus = (bus_numbers >> 8) & 0xffu;
-    return ScanBus(secondary_bus);
-  }
-
   return Error::kSuccess;
 }
-
-/** @brief devices[num_devices]に情報を書き込み num_device をインクリメントする*/
-Error AddDevice(uint8_t bus, uint8_t device,
-                uint8_t function, uint8_t header_type) {
-  if (num_device == devices.size()) {
-    return Error::kFull;
-  }
-
-  devices[num_device] = Device{bus, device, function, header_type};
-  ++num_device;
-  return Error::kSuccess;
 }
 
+namespace pci {
+void WriteAddress(uint32_t address) {
+  IoOut32(kConfigAddress, address);
+}
+
+void WriteData(uint32_t value) {
+  IoOut32(kConfigData, value);
+}
+
+uint32_t ReadData() {
+  return IoIn32(kConfigData);
+}
+
+uint16_t ReadVendorId(uint8_t bus, uint8_t device, uint8_t function) {
+  WriteAddress(MakeAddress(bus, device, function, 0x00));
+  return ReadData() & 0xffffu;
+}
+
+uint16_t ReadDeviceId(uint8_t bus, uint8_t device, uint8_t function) {
+  WriteAddress(MakeAddress(bus, device, function, 0x00));
+  return ReadData() >> 16;
+}
+
+uint8_t ReadHeaderType(uint8_t bus, uint8_t device, uint8_t function) {
+  WriteAddress(MakeAddress(bus, device, function, 0x0c));
+  return (ReadData() >> 16) & 0xffu;
+}
+
+uint32_t ReadClassCode(uint8_t bus, uint8_t device, uint8_t function) {
+  WriteAddress(MakeAddress(bus, device, function, 0x08));
+  return ReadData();
+}
+
+uint32_t ReadBusNumbers(uint8_t bus, uint8_t device, uint8_t function) {
+  WriteAddress(MakeAddress(bus, device, function, 0x18));
+  return ReadData();
+}
+
+bool IsSingleFunctionDevice(uint8_t header_type) {
+  return (header_type & 0x80u) == 0;
+}
 
 Error ScanAllBus() {
   num_device = 0;
