@@ -9,5 +9,5 @@ class MouseCursor {
   private:
     PixelWriter* pixel_writer_ = nullptr;
     PixelColor erase_color_;
-    Vector2D<int> position;
+    Vector2D<int> position_;
 };
