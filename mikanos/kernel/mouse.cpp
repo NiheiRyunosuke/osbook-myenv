@@ -1,4 +1,5 @@
 #include "mouse.hpp"
+#include "graphics.hpp"
 
 MouseCursor::MouseCursor(PixelWriter* writer, PixelColor erase_color,
                         Vector2D<int> initial_position)
