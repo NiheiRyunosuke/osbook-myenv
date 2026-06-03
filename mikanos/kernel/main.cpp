@@ -6,6 +6,7 @@
 #include "font.hpp"
 #include "console.hpp"
 #include "pci.hpp"
+#include "mouse.hpp"
 
 void operator delete(void* obj) noexcept{
 }
