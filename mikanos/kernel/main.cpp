@@ -131,16 +131,6 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   };
   printk("Welcome to MikanOS!\n");
 
-  // for (int dy = 0; dy < kMouseCursorHeight; ++dy) {
-  //   for (int dx = 0; dx < kMouseCursorWidth; ++dx) {
-  //     if (mouse_cursor_shape[dy][dx] == '@') {
-  //       pixel_writer->Write(200 + dx, 100 +dy, {0, 0, 0});
-  //     } else if (mouse_cursor_shape[dy][dx] == '.') {
-  //       pixel_writer->Write(200 + dx, 100 +dy, {255, 255, 255});
-  //     }
-  //   }
-  // }
-
   mouse_cursor = new(mouse_cursor_buf) MouseCursor{
     pixel_writer, kDesktopBGColor, {300, 200}
   };
