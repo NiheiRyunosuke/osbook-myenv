@@ -2,6 +2,7 @@
 
 #include <array>
 #include <stdint.h>
+#include "error.hpp"
 
 class Error {
  public:
