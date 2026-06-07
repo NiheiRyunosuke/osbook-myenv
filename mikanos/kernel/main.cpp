@@ -1,12 +1,23 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <cstdio>
+
+#include <numeric>
+#include <vector>
+
 #include "frame_buffer_config.hpp"
 #include "graphics.hpp"
+#include "mouse.hpp"
 #include "font.hpp"
 #include "console.hpp"
 #include "pci.hpp"
-#include "mouse.hpp"
+#include "logger.hpp"
+#include "usb/memory.hpp"
+#include "usb/device.hpp"
+#include "usb/classdriver/mouse.hpp"
+#include "usb/xhci/xhci.hpp"
+#include "usb/xhci/trb.hpp"
+
 
 void operator delete(void* obj) noexcept{
 }
@@ -14,7 +25,7 @@ void operator delete(void* obj) noexcept{
 void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
   bool intel_ehc_exist = false;
   for (int i = 0; i < pci::num_device; ++i) {
-    if (pci::device[i].class_code.Match(0x0cu, 0x03u, 0x20u) /* EHCI */ &&
+    if (pci::devices[i].class_code.Match(0x0cu, 0x03u, 0x20u) /* EHCI */ &&
         0x8086 == pci::ReadVendorId(pci::devices[i])) {
       intel_ehc_exist = true;
       break;
@@ -26,7 +37,7 @@ void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
 
   uint32_t superspeed_ports = pci::ReadConfReg(xhc_dev, 0xdc); // USB3PRM
   pci::WriteConfReg(xhc_dev, 0xd8, superspeed_ports); // USB3_PSSEN
-  uint32_t ehci2xhci_ports = pci::ReadConfigReg(xhc_dev, 0xd4); // XUSB2PRM
+  uint32_t ehci2xhci_ports = pci::ReadConfReg(xhc_dev, 0xd4); // XUSB2PRM
   pci::WriteConfReg(xhc_dev, 0xd0, ehci2xhci_ports); // XUSB2PR
   Log(kDebug, "SwitchEhci2Xhci: SS = %02, xHCI = %02x\n",
       superspeed_ports, ehci2xhci_ports);
