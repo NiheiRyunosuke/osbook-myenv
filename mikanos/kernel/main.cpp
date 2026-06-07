@@ -72,6 +72,19 @@ int printk(const char* format, ...) {
   return result;
 }
 
+usb::xhci::Controller* xhc;
+
+__attribute__((interrupt))
+void IntHandlerXHCI(InterruptFrame* frame) {
+  while (xhc->PrimaryEventRing()->HasFront()) {
+    if (auto err = ProcessEvent(*xhc)) {
+      Log(kError, "Error while ProcessEvent: %s at %s:%d\n",
+          err.Name(), err.File(), err.Line());
+    }
+  }
+  NotifyEndOfInterrupt();
+}
+
 extern "C" __attribute__((ms_abi))
 void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   __asm__("cli");
