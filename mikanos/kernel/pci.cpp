@@ -28,12 +28,15 @@ uint32_t MakeAddress(uint8_t bus, uint8_t device,
 Error AddDevice(uint8_t bus, uint8_t device,
                 uint8_t function, uint8_t header_type) {
   if (num_device == devices.size()) {
-    return Error::kFull;
+    return MAKE_ERROR(Error::kFull);
   }
 
-  devices[num_device] = Device{bus, device, function, header_type};
+  devices[num_device] = Device{
+    bus, device, function, header_type,
+    ReadClassCode(bus, device, function)
+  };
   ++num_device;
-  return Error::kSuccess;
+  return MAKE_ERROR(Error::kSuccess);
 }
 
 Error ScanBus(uint8_t bus);
@@ -48,8 +51,8 @@ Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
   }
 
   auto class_code = ReadClassCode(bus, device, function);
-  uint8_t base = (class_code >> 24) & 0xffu;
-  uint8_t sub = (class_code >> 16) & 0xffu;
+  uint8_t base = class_code.base;
+  uint8_t sub = class_code.sub;
 
   if (base == 0x06u && sub == 0x04u) {
     // standard PCI-PCI bridge
@@ -58,7 +61,7 @@ Error ScanFunction(uint8_t bus, uint8_t device, uint8_t function) {
     return ScanBus(secondary_bus);
   }
 
-  return Error::kSuccess;
+  return MAKE_ERROR(Error::kSuccess);
 }
 
 /** @brief 指定のデバイス番号の各ファンクションをスキャンする
@@ -69,7 +72,7 @@ Error ScanDevice(uint8_t bus, uint8_t device) {
     return err;
   }
   if (IsSingleFunctionDevice(ReadHeaderType(bus, device, 0))) {
-    return Error::kSuccess;
+    return MAKE_ERROR(Error::kSuccess);
   }
 
   for (uint8_t function = 1; function < 8; ++function) {
@@ -80,7 +83,7 @@ Error ScanDevice(uint8_t bus, uint8_t device) {
       return err;
     }
   }
-  return Error::kSuccess;
+  return MAKE_ERROR(Error::kSuccess);
 }
 
 /** @brief 指定のバス番号のデバイスをスキャンする.
@@ -95,7 +98,7 @@ Error ScanBus(uint8_t bus) {
       return err;
     }
   }
-  return Error::kSuccess;
+  return MAKE_ERROR(Error::kSuccess);
 }
 }
 
@@ -127,9 +130,24 @@ uint8_t ReadHeaderType(uint8_t bus, uint8_t device, uint8_t function) {
   return (ReadData() >> 16) & 0xffu;
 }
 
-uint32_t ReadClassCode(uint8_t bus, uint8_t device, uint8_t function) {
+ClassCode ReadClassCode(uint8_t bus, uint8_t device, uint8_t function) {
   WriteAddress(MakeAddress(bus, device, function, 0x08));
+  auto reg = ReadData();
+  return ClassCode{
+    static_cast<uint8_t>((reg >> 24) & 0xffu),
+    static_cast<uint8_t>((reg >> 16) & 0xffu),
+    static_cast<uint8_t>((reg >> 8) & 0xffu),
+  };
+}
+
+uint32_t ReadConfReg(const Device& dev, uint8_t reg_addr) {
+  WriteAddress(MakeAddress(dev.bus, dev.device, dev.function, reg_addr));
   return ReadData();
+}
+
+void WriteConfReg(const Device& dev, uint8_t reg_addr, uint32_t value) {
+  WriteAddress(MakeAddress(dev.bus, dev.device, dev.function, reg_addr));
+  WriteData(value);
 }
 
 uint32_t ReadBusNumbers(uint8_t bus, uint8_t device, uint8_t function) {
@@ -157,7 +175,71 @@ Error ScanAllBus() {
       return err;
     }
   }
-  return Error::kSuccess;
+  return MAKE_ERROR(Error::kSuccess);
 }
+
+WithError<uint64_t> ReadBar(Device& device, unsigned int bar_index) {
+  if (bar_index >= 6) {
+    return {0, MAKE_ERROR(Error::kIndexOutOfRange)};
+  }
+
+  const auto addr = CalcBarAddress(bar_index);
+  const uint32_t bar = ReadConfReg(device, addr);
+
+  if ((bar & 4u) == 0) {
+    return {bar, MAKE_ERROR(Error::kSuccess)};
+  }
+
+  if (bar_index >= 5) {
+    return {0, MAKE_ERROR(Error::kIndexOutOfRange)};
+  }
+
+  const uint32_t bar_upper = ReadConfReg(device, addr + 4);
+  return {
+    bar | (static_cast<uint64_t>(bar_upper) << 32),
+    MAKE_ERROR(Error::kSuccess)
+  };
+}
+
+
+  CapabilityHeader ReadCapabilityHeader(const Device& dev, uint8_t addr) {
+    CapabilityHeader header;
+    header.data = pci::ReadConfReg(dev, addr);
+    return header;
+  }
+
+  Error ConfigureMSI(const Device& dev, uint32_t msg_addr, uint32_t msg_data,
+                     unsigned int num_vector_exponent) {
+    uint8_t cap_addr = ReadConfReg(dev, 0x34) & 0xffu;
+    uint8_t msi_cap_addr = 0, msix_cap_addr = 0;
+    while (cap_addr != 0) {
+      auto header = ReadCapabilityHeader(dev, cap_addr);
+      if (header.bits.cap_id == kCapabilityMSI) {
+        msi_cap_addr = cap_addr;
+      } else if (header.bits.cap_id == kCapabilityMSIX) {
+        msix_cap_addr = cap_addr;
+      }
+      cap_addr = header.bits.next_ptr;
+    }
+
+    if (msi_cap_addr) {
+      return ConfigureMSIRegister(dev, msi_cap_addr, msg_addr, msg_data, num_vector_exponent);
+    } else if (msix_cap_addr) {
+      return ConfigureMSIXRegister(dev, msix_cap_addr, msg_addr, msg_data, num_vector_exponent);
+    }
+    return MAKE_ERROR(Error::kNoPCIMSI);
+  }
+
+  Error ConfigureMSIFixedDestination(
+      const Device& dev, uint8_t apic_id,
+      MSITriggerMode trigger_mode, MSIDeliveryMode delivery_mode,
+      uint8_t vector, unsigned int num_vector_exponent) {
+    uint32_t msg_addr = 0xfee00000u | (apic_id << 12);
+    uint32_t msg_data = (static_cast<uint32_t>(delivery_mode) << 8) | vector;
+    if (trigger_mode == MSITriggerMode::kLevel) {
+      msg_data |= 0xc000;
+    }
+    return ConfigureMSI(dev, msg_addr, msg_data, num_vector_exponent);
+  }
 
 }
