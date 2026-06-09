@@ -18,6 +18,12 @@ IoIn32:
     in eax, dx
     ret
 
+global GetCS
+GetCS:
+    xor eax, eax
+    mov ax, cs
+    ret
+
 global LoadIDT  ; void LoadIDT(uint16_t limit, uint64_t offset);
 LoadIDT:
     push rbp
@@ -29,3 +35,4 @@ LoadIDT:
     mov rsp, rbp
     pop rbp
     ret
+
