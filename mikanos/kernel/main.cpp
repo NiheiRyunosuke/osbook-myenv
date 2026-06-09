@@ -18,7 +18,7 @@
 #include "usb/classdriver/mouse.hpp"
 #include "usb/xhci/xhci.hpp"
 #include "usb/xhci/trb.hpp"
-
+#include "asmfunc.h"
 
 void operator delete(void* obj) noexcept{
 }
