@@ -9,6 +9,7 @@
 #include "graphics.hpp"
 #include "mouse.hpp"
 #include "font.hpp"
+#include "interrupt.hpp"
 #include "console.hpp"
 #include "pci.hpp"
 #include "logger.hpp"
@@ -126,6 +127,11 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
     *pixel_writer, kDesktopFGColor, kDesktopBGColor
   };
   printk("Welcome to MikanOS!\n");
+
+  const uint16_t cs = GetCS();
+  SetIDTEntry(idt[InterruptVector::kXHCI], MakeIDTAttr(DescriptorType::kInterruptGate, 0),
+              reinterpret_cast<uint64_t>(IntHandlerXHCI), cs);
+  LoadIDT(sizeof(idt) - 1, reinterpret_cast<uintptr_t>(&idt[0]));
 
   mouse_cursor = new(mouse_cursor_buf) MouseCursor{
     pixel_writer, kDesktopBGColor, {300, 200}
