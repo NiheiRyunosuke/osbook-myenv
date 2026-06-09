@@ -1,4 +1,13 @@
-#include <stdint.h>
+/**
+ * @file interrupt.hpp
+ *
+ * 割り込み用のプログラムを集めたファイル．
+ */
+
+#pragma once
+
+#include <array>
+#include <cstdint>
 
 union InterruptDescriptorAttribute {
   uint16_t data;
