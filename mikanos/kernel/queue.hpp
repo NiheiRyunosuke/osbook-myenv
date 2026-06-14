@@ -1,3 +1,10 @@
+#pragma once
+
+#include <cstddef>
+#include <array>
+
+#include "error.hpp"
+
 template <typename T>
 class ArrayQueue {
   public:
@@ -57,6 +64,16 @@ Error ArrayQueue<T>::Pop() {
     read_pos_ = 0;
   }
   return MAKE_ERROR(Error::kSuccess);
+}
+
+template <typename T>
+size_t ArrayQueue<T>::Count() const {
+  return count_;
+}
+
+template <typename T>
+size_t ArrayQueue<T>::Capacity() const {
+  return capacity_;
 }
 
 template <typename T>

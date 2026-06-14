@@ -10,6 +10,7 @@
 #include "mouse.hpp"
 #include "font.hpp"
 #include "interrupt.hpp"
+#include "queue.hpp"
 #include "console.hpp"
 #include "pci.hpp"
 #include "logger.hpp"
@@ -75,14 +76,17 @@ int printk(const char* format, ...) {
 
 usb::xhci::Controller* xhc;
 
+struct Message {
+  enum Type {
+    kInterruptXHCI,
+  } type;
+};
+
+ArrayQueue<Message>* main_queue;
+
 __attribute__((interrupt))
 void IntHandlerXHCI(InterruptFrame* frame) {
-  while (xhc->PrimaryEventRing()->HasFront()) {
-    if (auto err = ProcessEvent(*xhc)) {
-      Log(kError, "Error while ProcessEvent: %s at %s:%d\n",
-          err.Name(), err.File(), err.Line());
-    }
-  }
+  main_queue->Push(Message{Message::kInterruptXHCI});
   NotifyEndOfInterrupt();
 }
 
@@ -109,8 +113,8 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
                 kDesktopBGColor);
 
   FillRectangle(*pixel_writer,
-                {0, kFrameHeight},
-                {kFrameWidth, kFrameHeight - 50},
+                {0, kFrameHeight - 50},
+                {kFrameWidth, 50},
                 {1, 8, 17});
 
   FillRectangle(*pixel_writer,
@@ -208,7 +212,6 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
       }
     }
   }
-
 
   while (1) {
     __asm__("hlt");
