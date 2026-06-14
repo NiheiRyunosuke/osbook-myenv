@@ -2,7 +2,7 @@ template <typename T>
 class ArrayQueue {
   public:
     template <size_t N>
-    ArrayQueue(std::array<t, N>& buf);
+    ArrayQueue(std::array<T, N>& buf);
     ArrayQueue(T* buf, size_t size);
     Error Push(const T& value);
     Error Pop();
@@ -19,4 +19,4 @@ class ArrayQueue {
      * count_ is the number of elements available.
      */
   const size_t capacity_;
-}
+};
