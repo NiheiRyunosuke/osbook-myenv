@@ -29,3 +29,18 @@ template <typename T>
 ArrayQueue<T>::ArrayQueue(T* buf, size_t size)
   :  data_{buf},  read_pos_{0}, write_pos_{0}, count_{0}, capacity_{size}
 {}
+
+template <typename T>
+Error ArrayQueue<T>::Push(const T& value) {
+  if (count_ == capacity_) {
+    return MAKE_ERROR(Error::kFull);
+  }
+
+  data_[write_pos_] = value;
+  ++count_;
+  ++write_pos_;
+  if (write_pos_ == capacity_) {
+    write_pos_ = 0;
+  }
+  return MAKE_ERROR(Error::kSuccess);
+}
