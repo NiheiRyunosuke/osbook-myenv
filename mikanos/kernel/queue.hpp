@@ -44,3 +44,17 @@ Error ArrayQueue<T>::Push(const T& value) {
   }
   return MAKE_ERROR(Error::kSuccess);
 }
+
+template <typename T>
+Error ArrayQueue<T>::Pop() {
+  if (count_ == 0) {
+    return MAKE_ERROR(Error::kEmpty);
+  }
+
+  --count_;
+  ++read_pos_;
+  if (read_pos_ == capacity_) {
+    read_pos_ = 0;
+  }
+  return MAKE_ERROR(Error::kSuccess);
+}
