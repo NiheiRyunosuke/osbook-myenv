@@ -213,6 +213,31 @@ void KernelMain(const FrameBufferConfig& frame_buffer_config) {
     }
   }
 
+  while (true) {
+    __asm__("cli");
+    if (main_queue.Count() == 0) {
+      __asm__("sti\n\thlt");
+      continue;
+    }
+
+    Message msg = main_queue.Front();
+    main_queue.Pop();
+    __asm__("sti");
+
+    switch (msg.type) {
+    case Message::kInterruptXHCI:
+      while (xhc.PrimaryEventRing()->HasFront()) {
+        if (auto err = ProcessEvent(xhc)) {
+          Log(kError, "Error while ProcessEvent: %s at %s:%d\n",
+              err.Name(), err.File(), err.Line());
+        }
+      }
+      break;
+    default:
+      Log(kError, "Unknown message type: %d\n", msg.type);
+    }
+  }
+
   while (1) {
     __asm__("hlt");
   }
