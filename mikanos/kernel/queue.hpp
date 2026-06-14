@@ -58,3 +58,8 @@ Error ArrayQueue<T>::Pop() {
   }
   return MAKE_ERROR(Error::kSuccess);
 }
+
+template <typename T>
+const T& ArrayQueue<T>::Front() const {
+  return data_[read_pos_];
+}
