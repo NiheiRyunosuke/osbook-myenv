@@ -91,7 +91,8 @@ void IntHandlerXHCI(InterruptFrame* frame) {
 }
 
 extern "C" __attribute__((ms_abi))
-void KernelMain(const FrameBufferConfig& frame_buffer_config) {
+void KernelMain(const FrameBufferConfig& frame_buffer_config,
+                const MemoryMap& memory_map) {
   __asm__("cli");
   switch (frame_buffer_config.pixel_format) {
     case kPixelRGBResv8BitPerColor:
