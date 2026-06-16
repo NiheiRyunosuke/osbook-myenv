@@ -93,8 +93,7 @@ void IntHandlerXHCI(InterruptFrame* frame) {
 
 alignas(16) uint8_t kernel_main_stack[1024 * 1024];
 
-extern "C" __attribute__((ms_abi))
-void KernelMainNewStack(
+extern "C" void KernelMainNewStack(
     const FrameBufferConfig& frame_buffer_config_ref,
     const MemoryMap& memory_map_ref) {
   FrameBufferConfig frame_buffer_config{frame_buffer_config_ref};
