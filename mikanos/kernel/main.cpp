@@ -21,6 +21,7 @@
 #include "usb/xhci/trb.hpp"
 #include "asmfunc.h"
 #include "memory_map.hpp"
+#include "segment.hpp"
 
 void operator delete(void* obj) noexcept{
 }
@@ -137,6 +138,15 @@ extern "C" void KernelMainNewStack(
     *pixel_writer, kDesktopFGColor, kDesktopBGColor
   };
   printk("Welcome to MikanOS!\n");
+
+  SetupSegments();
+
+  const uint16_t kernel_cs = 1 << 3;
+  const uint16_t kernel_ss = 2 << 3;
+  SetDSAll(0);
+  SetCSSS(kernel_cs, kernel_ss);
+
+  SetupIdentityPageTable();
 
   const uint16_t cs = GetCS();
   SetIDTEntry(idt[InterruptVector::kXHCI], MakeIDTAttr(DescriptorType::kInterruptGate, 0),
