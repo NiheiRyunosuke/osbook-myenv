@@ -229,6 +229,7 @@ extern "C" void KernelMainNewStack(
     }
   }
 
+  // メモリマップ構造体のポインタを受け取る
   printk("memory_map: %p\n", &memory_map);
   for (uintptr_t iter = reinterpret_cast<uintptr_t>(memory_map.buffer);
       iter < reinterpret_cast<uintptr_t>(memory_map.buffer) + memory_map.map_size;
@@ -246,6 +247,33 @@ extern "C" void KernelMainNewStack(
       }
     }
 
+  ::memory_manager = new(memory_manager_buf) BitmapMemoryManager;
+
+  const auto memory_map_base = reinterpret_cast<uintptr_t>(memory_map.buffer);
+  uintptr_t available_end = 0;
+  for (uintptr_t iter = memory_map_base;
+      iter < memory_map_base + memory_map.map_size;
+      iter += memory_map.descriptor_size) {
+    auto desc = reinterpret_cast<const MemoryDescriptor*>(iter);
+    if (available_end < desc->physical_start) {
+      memory_manager->MarkAllocated(
+        FrameID{available_end / kBytesPerFrame},
+        (desc->physical_start - available_end) / kBytesPerFrame);
+    }
+
+    const auto physical_end =
+      desc->physical_start + desc->number_of_pages * kUEFIPageSize;
+    if (IsAvailable(static_cast<MemoryType>(desc->type))) {
+      available_end = physical_end;
+    } else {
+      memory_manager->MarkAllocated(
+        FrameID{desc->physical_start / kBytesPerFrame},
+        desc->number_of_pages * kUEFIPageSize / kBytesPerFrame);
+    }
+  }
+  memory_manager->SetMemoryRange(FrameID{1}, FrameID{available_end / kBytesPerFrame});
+
+  // イベント待機
   while (true) {
     __asm__("cli");
     if (main_queue.Count() == 0) {
