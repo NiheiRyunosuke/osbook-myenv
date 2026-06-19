@@ -1,3 +1,5 @@
+#include "memory_manager.hpp"
+
 void BitmapMemoryManager::MarkAllocated(FrameID start_frame, size_t num_frames) {
   for (size_t i = 0; i < num_frames; ++i) {
     SetBit(FrameID{start_frame.ID() + i}, true);
@@ -51,4 +53,11 @@ WithError<FrameID> BitmapMemoryManager::Allocate(size_t num_frames) {
     // 次のフレームから再検索
     start_frame_id += i + 1;
   }
+}
+
+Error BitmapMemoryManager::Free(FrameID start_frame, size_t num_frames) {
+  for (size_t i = 0; i < num_frames; ++i) {
+    SetBit(FrameID{start_frame.ID() + i}, false);
+  }
+  return MAKE_ERROR(Error::kSuccess);
 }
