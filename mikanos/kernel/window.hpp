@@ -1,3 +1,9 @@
+#pragma once
+
+#include <vector>
+#include <optional>
+#include "graphics.hpp"
+
 class Window {
   public:
     /** @brief WindowWriter は Window と関連付けられた PixelWriter を提供する */
