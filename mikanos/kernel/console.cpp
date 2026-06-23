@@ -37,3 +37,11 @@ void Console::Newline() {
     memset(buffer_[kRows -1], 0, kColumns + 1);
   } 
 }
+
+void Console::SetWriter(PixelWriter* writer) {
+  if (writer == writer_) {
+    return;
+  }
+  writer_ = writer;
+  Refresh();
+}
