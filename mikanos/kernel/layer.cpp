@@ -15,3 +15,8 @@ void Layer::DrawTo(PixelWriter& writer) const {
     window_->DrawTo(writer, pos_);
   }
 }
+
+Layer& LayerManager::NewLayer() {
+  ++latest_id_;
+  return *layers_.emplace_back(new Layer{latest_id_});
+}
