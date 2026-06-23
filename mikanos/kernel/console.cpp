@@ -45,3 +45,9 @@ void Console::SetWriter(PixelWriter* writer) {
   writer_ = writer;
   Refresh();
 }
+
+void Console::Refresh() {
+  for (int row = 0; row < kRows; ++row) {
+    WriteString(*writer_, 0, 16* row, buffer_[row], fg_color_);
+  }
+}
