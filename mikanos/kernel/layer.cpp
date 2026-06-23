@@ -9,3 +9,9 @@ Layer& Layer::MoveRelative(Vector2D<int> pos_diff) {
   pos_ += pos_diff;
   return *this;
 }
+
+void Layer::DrawTo(PixelWriter& writer) const {
+  if (window_) {
+    window_->DrawTo(writer, pos_);
+  }
+}
