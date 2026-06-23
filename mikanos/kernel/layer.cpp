@@ -40,3 +40,9 @@ void LayerManager::Move(unsigned int id, Vector2D<int> new_position) {
 void LayerManager::MoveRelative(unsigned int id, Vector2D<int> pos_diff) {
   FindLayer(id)->MoveRelative(pos_diff);
 }
+
+void LayerManager::Draw() const {
+  for (auto layer : layer_stack_) {
+    layer->DrawTo(*writer_);
+  }
+}
