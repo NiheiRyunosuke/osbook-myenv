@@ -58,9 +58,6 @@ void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
   layer_manager->Draw();
 }
 
-const PixelColor kDesktopBGColor{45, 118, 237};
-const PixelColor kDesktopFGColor{255, 255, 255};
-
 char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
 PixelWriter* pixel_writer;
 
