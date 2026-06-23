@@ -54,3 +54,28 @@ void LayerManager::Hide(unsigned int id) {
     layer_stack_.erase(pos);
   }
 }
+
+void LayerManager::UpDown(unsigned int id, int new_height) {
+  if (new_height < 0) {
+    Hide(id);
+    return;
+  }
+  if (new_height > layer_stack_.size()) {
+    new_height = layer_stack_.size();
+  }
+
+  auto layer = FindLayer(id);
+  auto old_pos = std::find(layer_stack_.begin(), layer_stack_.end(), layer);
+  auto new_pos = layer_stack_.begin() + new_height;
+  
+  if (old_pos == layer_stack_.end()) {
+    layer_stack_.insert(new_pos, layer);
+    return;
+  }
+
+  if (new_pos == layer_stack.end()) {
+    --new_pos;
+  }
+  layer_stack_.erase(old_pos);
+  layer_stack_.insert(new_pos, layer);
+}
