@@ -115,6 +115,9 @@ extern "C" void KernelMainNewStack(
       break;
   }
 
+  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
+  const int kFrameHeight = frame_buffer_config.vertical_resolution;
+
   FillRectangle(*pixel_writer,
                 {0, 0},
                 {kFrameWidth, kFrameHeight - 50},
@@ -135,10 +138,14 @@ extern "C" void KernelMainNewStack(
                 {30, 30},
                 {160, 160, 160});
 
+  DrawDesktop(*pixel_writer);
+
   console = new(console_buf) Console{
-    *pixel_writer, kDesktopFGColor, kDesktopBGColor
+    kDesktopFGColor, kDesktopBGColor
   };
+  console->SetWriter(pixel_writer);
   printk("Welcome to MikanOS!\n");
+  SetLogLevel(kWarn);
 
   SetupSegments();
 
@@ -230,8 +237,6 @@ extern "C" void KernelMainNewStack(
     }
   }
 
-  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
-  const int kFrameHeight = frame_buffer_config.vertical_resolution;
 
   auto bgwindow = std::make_shared<Window>(kFrameWidth, kFrameHeight);
   auto bgwriter = bgwindow->Writer();
