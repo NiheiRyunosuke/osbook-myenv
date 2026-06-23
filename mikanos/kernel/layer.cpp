@@ -20,3 +20,14 @@ Layer& LayerManager::NewLayer() {
   ++latest_id_;
   return *layers_.emplace_back(new Layer{latest_id_});
 }
+
+Layer* LayerManager::FindLayer(unsigned int id) {
+  auto pred = [id](const std::unique_ptr<Layer>& elem) {
+    return elem->ID() == id;
+  };
+  auto it = std::find_if(layers_.begin(), layers_.end(), pred);
+  if (it == layers_.end()) {
+    return nullptr;
+  }
+  return it->get();
+}
