@@ -22,6 +22,7 @@
 #include "asmfunc.h"
 #include "memory_map.hpp"
 #include "segment.hpp"
+#include "layer.hpp"
 
 void operator delete(void* obj) noexcept{
 }
@@ -50,8 +51,11 @@ void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
 char mouse_cursor_buf[sizeof(MouseCursor)];
 MouseCursor* mouse_cursor;
 
+unsigned int mouse_layer_id;
+
 void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
-  mouse_cursor->MoveRelative({displacement_x, displacement_y});
+  layer_manager->MoveRelative(mouse_layer_id, {displacement_x, displacement_y});
+  layer_manager->Draw();
 }
 
 const PixelColor kDesktopBGColor{45, 118, 237};
@@ -110,9 +114,6 @@ extern "C" void KernelMainNewStack(
         BGRResv8BitPerColorPixelWriter{frame_buffer_config};
       break;
   }
-
-  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
-  const int kFrameHeight = frame_buffer_config.vertical_resolution;
 
   FillRectangle(*pixel_writer,
                 {0, 0},
@@ -228,6 +229,36 @@ extern "C" void KernelMainNewStack(
       }
     }
   }
+
+  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
+  const int kFrameHeight = frame_buffer_config.vertical_resolution;
+
+  auto bgwindow = std::make_shared<Window>(kFrameWidth, kFrameHeight);
+  auto bgwriter = bgwindow->Writer();
+
+  DrawDesktop(*bgwriter);
+  console->SetWriter(bgwriter);
+
+  auto mouse_window = std::make_shared<Window>(
+      kMouseCursorWidth, kMouseCursorHeight);
+  mouse_window->SetTransparentColor(kMouseTransparentColor);
+  DrawMouseCursor(mouse_window->Writer(), {0}, {0});
+
+  layer_manager = new LayerManager;
+  layer_manager->SetWriter(pixel_writer);
+
+  auto bglayer_id = layer_manager->NewLayer()
+    .SetWindow(bgwindow)
+    .Move({0, 0})
+    .ID();
+  mouse_layer_id = layer_manager->NewLayer()
+    .SetWindow(mouse_window)
+    .Move({200, 200})
+    .ID();
+  
+  layer_manager->UpDown(bglayer_id, 0);
+  layer_manager->UpDown(mouse_layer_id, 1);
+  layer_manager->Draw();
 
   // メモリマップ構造体のポインタを受け取る
   printk("memory_map: %p\n", &memory_map);
