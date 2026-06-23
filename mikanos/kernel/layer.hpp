@@ -31,4 +31,43 @@ class Layer {
     unsigned int id_;
     Vector2D<int> pos_;
     std::shared_ptr<Window> window_;
-}
+};
+
+class LayerManager {
+  public:
+    /** @brief Drawメソッドなどで描画する際の描画先を設定する */
+    void SetWriter(PixelWriter* writer);
+    /** @brief 新しいレイヤーを参照を返す
+     * 
+     * 新しく生成されたレイヤーの実体はLayerManager内部のコンテナで保持される
+     */
+    Layer& NewLayer();
+
+    /** @brief 現在表示状態にあるレイヤーを描画する */
+    void Draw() const;
+
+    /** @brief レイヤーの位置情報を指定された絶対座標へと更新する、再描画はしない */
+    void Move(unsigned int id, Vector2D<int> new_position);
+    /** @brief レイヤーの位置情報を指定された相対座標へと更新する、再描画はしない */
+    void MoveRelative(unsigned int id, Vector2D<int> pos_diff);
+
+    /** @brief レイヤーの高さ方向の位置を指定された位置に移動する 
+     * 
+     * new_heightに負の高さを指定するとレイヤーは非表示になり
+     * 0以上を指定するとその高さになる
+     * 現在のレイヤー数以上の数値を指定した場合は最前面のレイヤーとなる
+    */
+    void UpDown(unsigned int id, int new_height);
+    /** @brief レイヤーを非表示とする */
+    void Hide(unsigned int id);
+
+  private:
+    PixelWriter* writer_{nullptr};
+    std::vector<std::unique_ptr<Layer>> layers_{};
+    std::vector<Layer*> layer_stack_{};
+    unsigned int latest_id_{0};
+
+    Layer* FindLayer(unsigned int id);
+  };
+
+  extern LayerManager* layer_manager;
