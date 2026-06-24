@@ -73,7 +73,7 @@ void LayerManager::UpDown(unsigned int id, int new_height) {
     return;
   }
 
-  if (new_pos == layer_stack.end()) {
+  if (new_pos == layer_stack_.end()) {
     --new_pos;
   }
   layer_stack_.erase(old_pos);
