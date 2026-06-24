@@ -114,29 +114,6 @@ extern "C" void KernelMainNewStack(
       break;
   }
 
-  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
-  const int kFrameHeight = frame_buffer_config.vertical_resolution;
-
-  FillRectangle(*pixel_writer,
-                {0, 0},
-                {kFrameWidth, kFrameHeight - 50},
-                kDesktopBGColor);
-
-  FillRectangle(*pixel_writer,
-                {0, kFrameHeight - 50},
-                {kFrameWidth, 50},
-                {1, 8, 17});
-
-  FillRectangle(*pixel_writer,
-                {0, kFrameHeight - 50},
-                {kFrameWidth / 5, 50},
-                {80, 80, 80});
-              
-  DrawRectangle(*pixel_writer,
-                {10, kFrameHeight - 40},
-                {30, 30},
-                {160, 160, 160});
-
   DrawDesktop(*pixel_writer);
 
   console = new(console_buf) Console{
@@ -155,128 +132,7 @@ extern "C" void KernelMainNewStack(
 
   SetupIdentityPageTable();
 
-  const uint16_t cs = GetCS();
-  SetIDTEntry(idt[InterruptVector::kXHCI], MakeIDTAttr(DescriptorType::kInterruptGate, 0),
-              reinterpret_cast<uint64_t>(IntHandlerXHCI), cs);
-  LoadIDT(sizeof(idt) - 1, reinterpret_cast<uintptr_t>(&idt[0]));
-
-  auto err = pci::ScanAllBus();
-  printk("ScanAllBus: %s\n", err.Name());
-
-  for (int i = 0; i < pci::num_device; ++i) {
-    const auto& dev = pci::devices[i];
-    auto vendor_id = pci::ReadVendorId(dev.bus, dev.device, dev.function);
-    auto class_code = pci::ReadClassCode(dev.bus, dev.device, dev.function);
-    printk("%d.%d.%d: vend %04x, class %08x, head %02x\n",
-        dev.bus, dev.device, dev.function,
-        vendor_id, class_code, dev.header_type);
-  }
-
-  // intel 製を優先してxHCを探す
-  pci::Device* xhc_dev = nullptr;
-  for (int i = 0; i < pci::num_device; ++i) {
-    if (pci::devices[i].class_code.Match(0x0cu, 0x03u, 0x30u)) {
-      xhc_dev = &pci::devices[i];
-
-      if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
-        break;
-      }
-    }
-  }
-
-  if (xhc_dev) {
-    Log(kInfo, "xHC has been found: %d.%d.%d\n",
-        xhc_dev->bus, xhc_dev->device, xhc_dev->function);
-  }
-
-  const uint8_t bsp_local_apic_id =
-    *reinterpret_cast<const uint32_t*>(0xfee00020) >> 24;
-  pci::ConfigureMSIFixedDestination(
-      *xhc_dev, bsp_local_apic_id,
-      pci::MSITriggerMode::kLevel, pci::MSIDeliveryMode::kFixed,
-      InterruptVector::kXHCI, 0);
-
-  const WithError<uint64_t> xhc_bar = pci::ReadBar(*xhc_dev, 0);
-  Log(kDebug, "ReadBar: %s\n", xhc_bar.error.Name());
-  const uint64_t xhc_mmio_base = xhc_bar.value & ~static_cast<uint64_t>(0xf);
-  Log(kDebug, "xHC mmio_base = %08lx\n", xhc_mmio_base);
-
-  usb::xhci::Controller xhc{xhc_mmio_base};
-
-  if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
-    SwitchEhci2Xhci(*xhc_dev);
-  }
-  {
-    auto err = xhc.Initialize();
-    Log(kDebug, "xhc.Initialize: %s\n", err.Name());
-  }
-
-  Log(kInfo, "xHC starting\n");
-  xhc.Run();
-
-  ::xhc = &xhc;
-  __asm__("sti");
-
-  usb::HIDMouseDriver::default_observer = MouseObserver;
-
-  for (int i = 1; i <= xhc.MaxPorts(); ++i) {
-    auto port = xhc.PortAt(i);
-    Log(kDebug, "Port %d: IsConnected=%d\n", i, port.IsConnected());
-
-    if (port.IsConnected()) {
-      if (auto err = ConfigurePort(xhc, port)) {
-        Log(kError, "failed to configure port: %s at %s:%d\n",
-            err.Name(), err.File(), err.Line());
-        continue;
-      }
-    }
-  }
-
-
-  auto bgwindow = std::make_shared<Window>(kFrameWidth, kFrameHeight);
-  auto bgwriter = bgwindow->Writer();
-
-  DrawDesktop(*bgwriter);
-  console->SetWriter(bgwriter);
-
-  auto mouse_window = std::make_shared<Window>(
-      kMouseCursorWidth, kMouseCursorHeight);
-  mouse_window->SetTransparentColor(kMouseTransparentColor);
-  DrawMouseCursor(mouse_window->Writer(), {0}, {0});
-
-  layer_manager = new LayerManager;
-  layer_manager->SetWriter(pixel_writer);
-
-  auto bglayer_id = layer_manager->NewLayer()
-    .SetWindow(bgwindow)
-    .Move({0, 0})
-    .ID();
-  mouse_layer_id = layer_manager->NewLayer()
-    .SetWindow(mouse_window)
-    .Move({200, 200})
-    .ID();
-  
-  layer_manager->UpDown(bglayer_id, 0);
-  layer_manager->UpDown(mouse_layer_id, 1);
-  layer_manager->Draw();
-
-  // メモリマップ構造体のポインタを受け取る
-  printk("memory_map: %p\n", &memory_map);
-  for (uintptr_t iter = reinterpret_cast<uintptr_t>(memory_map.buffer);
-      iter < reinterpret_cast<uintptr_t>(memory_map.buffer) + memory_map.map_size;
-      iter += memory_map.descriptor_size) {
-    auto desc = reinterpret_cast<MemoryDescriptor*>(iter);
-    for (int i = 0; i < available_memory_types.size(); ++i) {
-      if (desc->type == available_memory_types[i]) {
-        printk("type = %u, phys = %08lx - %08lx, pages = %lu, attr = %08lx\n",
-                desc->type,
-                desc->physical_start,
-                desc->physical_start + desc->number_of_pages * 4096 -1,
-                desc->number_of_pages,
-                desc->attribute);
-        }
-      }
-    }
+  ::memory_manager = new(memory_manager_buf) BitmapMemoryManager;
 
   const auto memory_map_base = reinterpret_cast<uintptr_t>(memory_map.buffer);
   uintptr_t available_end = 0;
@@ -308,6 +164,115 @@ extern "C" void KernelMainNewStack(
     exit(1);
   }
 
+  std::array<Message, 32> main_queue_data;
+  ArrayQueue<Message> main_queue{main_queue_data};
+  ::main_queue = &main_queue;
+
+  auto err = pci::ScanAllBus();
+  Log(kDebug, "ScanAllBus: %s\n", err.Name());
+
+  for (int i = 0; i < pci::num_device; ++i) {
+    const auto& dev = pci::devices[i];
+    auto vendor_id = pci::ReadVendorId(dev.bus, dev.device, dev.function);
+    auto class_code = pci::ReadClassCode(dev.bus, dev.device, dev.function);
+    printk("%d.%d.%d: vend %04x, class %08x, head %02x\n",
+        dev.bus, dev.device, dev.function,
+        vendor_id, class_code, dev.header_type);
+  }
+
+  // intel 製を優先してxHCを探す
+  pci::Device* xhc_dev = nullptr;
+  for (int i = 0; i < pci::num_device; ++i) {
+    if (pci::devices[i].class_code.Match(0x0cu, 0x03u, 0x30u)) {
+      xhc_dev = &pci::devices[i];
+
+      if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
+        break;
+      }
+    }
+  }
+
+  if (xhc_dev) {
+    Log(kInfo, "xHC has been found: %d.%d.%d\n",
+        xhc_dev->bus, xhc_dev->device, xhc_dev->function);
+  }
+
+  SetIDTEntry(idt[InterruptVector::kXHCI], MakeIDTAttr(DescriptorType::kInterruptGate, 0),
+              reinterpret_cast<uint64_t>(IntHandlerXHCI), kernel_cs);
+  LoadIDT(sizeof(idt) - 1, reinterpret_cast<uintptr_t>(&idt[0]));
+
+  const uint8_t bsp_local_apic_id =
+    *reinterpret_cast<const uint32_t*>(0xfee00020) >> 24;
+  pci::ConfigureMSIFixedDestination(
+      *xhc_dev, bsp_local_apic_id,
+      pci::MSITriggerMode::kLevel, pci::MSIDeliveryMode::kFixed,
+      InterruptVector::kXHCI, 0);
+
+  const WithError<uint64_t> xhc_bar = pci::ReadBar(*xhc_dev, 0);
+  Log(kDebug, "ReadBar: %s\n", xhc_bar.error.Name());
+  const uint64_t xhc_mmio_base = xhc_bar.value & ~static_cast<uint64_t>(0xf);
+  Log(kDebug, "xHC mmio_base = %08lx\n", xhc_mmio_base);
+
+  usb::xhci::Controller xhc{xhc_mmio_base};
+
+  if (0x8086 == pci::ReadVendorId(*xhc_dev)) {
+    SwitchEhci2Xhci(*xhc_dev);
+  }
+  {
+    auto err = xhc.Initialize();
+    Log(kDebug, "xhc.Initialize: %s\n", err.Name());
+  }
+
+  Log(kInfo, "xHC starting\n");
+  xhc.Run();
+
+  ::xhc = &xhc;
+
+  usb::HIDMouseDriver::default_observer = MouseObserver;
+
+  for (int i = 1; i <= xhc.MaxPorts(); ++i) {
+    auto port = xhc.PortAt(i);
+    Log(kDebug, "Port %d: IsConnected=%d\n", i, port.IsConnected());
+
+    if (port.IsConnected()) {
+      if (auto err = ConfigurePort(xhc, port)) {
+        Log(kError, "failed to configure port: %s at %s:%d\n",
+            err.Name(), err.File(), err.Line());
+        continue;
+      }
+    }
+  }
+
+  const int kFrameWidth = frame_buffer_config.horizontal_resolution;
+  const int kFrameHeight = frame_buffer_config.vertical_resolution;
+
+  auto bgwindow = std::make_shared<Window>(kFrameWidth, kFrameHeight);
+  auto bgwriter = bgwindow->Writer();
+
+  DrawDesktop(*bgwriter);
+  console->SetWriter(bgwriter);
+
+  auto mouse_window = std::make_shared<Window>(
+      kMouseCursorWidth, kMouseCursorHeight);
+  mouse_window->SetTransparentColor(kMouseTransparentColor);
+  DrawMouseCursor(mouse_window->Writer(), {0, 0});
+
+  layer_manager = new LayerManager;
+  layer_manager->SetWriter(pixel_writer);
+
+  auto bglayer_id = layer_manager->NewLayer()
+    .SetWindow(bgwindow)
+    .Move({0, 0})
+    .ID();
+  mouse_layer_id = layer_manager->NewLayer()
+    .SetWindow(mouse_window)
+    .Move({200, 200})
+    .ID();
+  
+  layer_manager->UpDown(bglayer_id, 0);
+  layer_manager->UpDown(mouse_layer_id, 1);
+  layer_manager->Draw();
+
   // イベント待機
   while (true) {
     __asm__("cli");
@@ -333,8 +298,7 @@ extern "C" void KernelMainNewStack(
       Log(kError, "Unknown message type: %d\n", msg.type);
     }
   }
-
-  while (1) {
-    __asm__("hlt");
-  }
+}
+extern "C" void __cxa_pure_virtual() {
+  while (1) __asm__("hlt");
 }
