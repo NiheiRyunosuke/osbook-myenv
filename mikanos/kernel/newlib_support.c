@@ -3,14 +3,8 @@
 #include <errno.h>
 #include <stddef.h>
 
-caddr_t sbrk(int incr) {
-  return NULL;
-}
-
-void _exit(int status) {
-  while (1) {
-    __asm__("hlt");
-  }
+void _exit(void) {
+  while (1) __asm__("hlt");
 }
 
 int close(int fd) {
