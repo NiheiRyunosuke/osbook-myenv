@@ -1,6 +1,22 @@
 #include "layer.hpp"
 #include <algorithm>
 
+Layer::Layer(unsigned int id) : id_{id} {
+}
+
+unsigned int Layer::ID() const {
+  return id_;
+}
+
+Layer& Layer::SetWindow(const std::shared_ptr<Window>& window) {
+  window_ = window;
+  return *this;
+}
+
+std::shared_ptr<Window> Layer::GetWindow() const {
+  return window_;
+}
+
 Layer& Layer::Move(Vector2D<int> pos) {
   pos_ = pos;
   return *this;
@@ -15,6 +31,10 @@ void Layer::DrawTo(PixelWriter& writer) const {
   if (window_) {
     window_->DrawTo(writer, pos_);
   }
+}
+
+void LayerManager::SetWriter(PixelWriter* writer) {
+  writer_ = writer;
 }
 
 Layer& LayerManager::NewLayer() {
@@ -79,3 +99,5 @@ void LayerManager::UpDown(unsigned int id, int new_height) {
   layer_stack_.erase(old_pos);
   layer_stack_.insert(new_pos, layer);
 }
+
+LayerManager* layer_manager;
