@@ -5,6 +5,7 @@
 
 bits 64
 section .text
+
 global IoOut32  ; void IoOut32(uint16_t addr, uint32_t data);
 IoOut32:
     mov dx, di    ; dx = addr
@@ -36,17 +37,6 @@ LoadIDT:
     pop rbp
     ret
 
-extern kernel_main_stack
-extern KernelMainStack
-
-global KernelMain
-KernelMain:
-    mov rsp, kernel_main_stack + 1024 * 1024
-    call KernelMainStack
-.fin:
-    hlt
-    jmp .fin
-
 global LoadGDT  ; void LoadGDT(uint16_t limit, uint64_t offset);
 LoadGDT:
     push rbp
@@ -57,14 +47,6 @@ LoadGDT:
     lgdt [rsp]
     mov rsp, rbp
     pop rbp
-    ret
-
-global SetDSAll    ; void SetDSAll(uint16_t value);
-SetDSAll:
-    mov ds, di
-    mov es, di
-    mov fs, di
-    mov gs, di
     ret
 
 global SetCSSS    ; void SetCSSS(uint16_t cs, uint16_t ss);
@@ -81,7 +63,26 @@ SetCSSS:
     pop rbp
     ret
 
+global SetDSAll    ; void SetDSAll(uint16_t value);
+SetDSAll:
+    mov ds, di
+    mov es, di
+    mov fs, di
+    mov gs, di
+    ret
+
 global SetCR3   ; void SetCR3(uint64_t value);
 SetCR3:
     mov cr3, rdi
     ret
+
+extern kernel_main_stack
+extern KernelMainStack
+
+global KernelMain
+KernelMain:
+    mov rsp, kernel_main_stack + 1024 * 1024
+    call KernelMainStack
+.fin:
+    hlt
+    jmp .fin
