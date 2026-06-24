@@ -50,9 +50,6 @@ void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
       superspeed_ports, ehci2xhci_ports);
 }
 
-char mouse_cursor_buf[sizeof(MouseCursor)];
-MouseCursor* mouse_cursor;
-
 unsigned int mouse_layer_id;
 
 void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
@@ -78,6 +75,9 @@ int printk(const char* format, ...) {
   console->PutString(s);
   return result;
 }
+
+char memory_manager_buf[sizeof(BitmapMemoryManager)];
+BitmapMemoryManager* memory_manager;
 
 usb::xhci::Controller* xhc;
 
@@ -159,10 +159,6 @@ extern "C" void KernelMainNewStack(
   SetIDTEntry(idt[InterruptVector::kXHCI], MakeIDTAttr(DescriptorType::kInterruptGate, 0),
               reinterpret_cast<uint64_t>(IntHandlerXHCI), cs);
   LoadIDT(sizeof(idt) - 1, reinterpret_cast<uintptr_t>(&idt[0]));
-
-  mouse_cursor = new(mouse_cursor_buf) MouseCursor{
-    pixel_writer, kDesktopBGColor, {300, 200}
-  };
 
   auto err = pci::ScanAllBus();
   printk("ScanAllBus: %s\n", err.Name());
@@ -281,8 +277,6 @@ extern "C" void KernelMainNewStack(
         }
       }
     }
-
-  ::memory_manager = new(memory_manager_buf) BitmapMemoryManager;
 
   const auto memory_map_base = reinterpret_cast<uintptr_t>(memory_map.buffer);
   uintptr_t available_end = 0;
