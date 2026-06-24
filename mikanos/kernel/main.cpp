@@ -23,6 +23,8 @@
 #include "memory_map.hpp"
 #include "segment.hpp"
 #include "layer.hpp"
+#include "paging.hpp"
+#include "memory_manager.hpp"
 
 void operator delete(void* obj) noexcept{
 }
