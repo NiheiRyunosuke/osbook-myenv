@@ -25,6 +25,7 @@
 #include "layer.hpp"
 #include "paging.hpp"
 #include "memory_manager.hpp"
+#include "timer.hpp"
 
 void operator delete(void* obj) noexcept{
 }
@@ -122,6 +123,8 @@ extern "C" void KernelMainNewStack(
   console->SetWriter(pixel_writer);
   printk("Welcome to MikanOS!\n");
   SetLogLevel(kWarn);
+
+  InitializeLAPICTimer();
 
   SetupSegments();
 
