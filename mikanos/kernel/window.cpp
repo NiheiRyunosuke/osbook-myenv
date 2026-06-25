@@ -1,9 +1,21 @@
 #include "window.hpp"
+#include "logger.hpp"
 
-Window::Window(int width, int height) : width_{width}, height_{height} {
+Window::Window(int width, int height, PixelFormat shadow_format) : width_{width}, height_{height} {
   data_.resize(height);
   for (int y = 0; y < height; ++y) {
     data_[y].resize(width);
+  }
+
+  FrameBufferConfig config{};
+  config.frame_buffer = nullptr;
+  config.horizontal_resolution = width;
+  config.vertical_resolution = height;
+  config.pixel_format = shadow_format;
+
+  if (auto err = shadow_buffer_.Initialize(config)) {
+    Log(kError, "failed to initialize shadow buffer: %s at %s.%d\n",
+        err.Name(), err.File(), err.Line());
   }
 }
 
