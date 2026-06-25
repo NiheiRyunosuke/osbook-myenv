@@ -53,6 +53,19 @@ void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
 
 unsigned int mouse_layer_id;
 
+int printk(const char* format, ...) {
+  va_list ap;
+  int result;
+  char s[1024];
+
+  va_start(ap, format);
+  result =vsprintf(s, format, ap);
+  va_end(ap);
+
+  console->PutString(s);
+  return result;
+}
+
 void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
   layer_manager->MoveRelative(mouse_layer_id, {displacement_x, displacement_y});
   StartLAPICTimer();
@@ -67,19 +80,6 @@ PixelWriter* pixel_writer;
 
 char console_buf[sizeof(Console)];
 Console* console;
-
-int printk(const char* format, ...) {
-  va_list ap;
-  int result;
-  char s[1024];
-
-  va_start(ap, format);
-  result =vsprintf(s, format, ap);
-  va_end(ap);
-
-  console->PutString(s);
-  return result;
-}
 
 char memory_manager_buf[sizeof(BitmapMemoryManager)];
 BitmapMemoryManager* memory_manager;
