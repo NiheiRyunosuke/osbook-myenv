@@ -52,8 +52,13 @@ PixelColor& Window::At(int x, int y) {
   return data_[y][x];
 }
 
-const PixelColor& Window::At(int x, int y) const{
-  return data_[y][x];
+const PixelColor& Window::At(Vector2D<int> pos) const{
+  return data_[pos.y][pos.x];
+}
+
+void Window::Write(Vector2D<int> pos, PixelColor c) {
+  data_[pos.y][pos.x] = c;
+  shadow_buffer_.Writer().Write(pos, c);
 }
 
 int Window::Width() const {
