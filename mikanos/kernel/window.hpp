@@ -11,8 +11,8 @@ class Window {
       public:
         WindowWriter(Window& window) : window_{window} {}
         /** @brief 指定された位置に指定された色を描く */
-        virtual void Write(int x, int y, const PixelColor& c) override {
-        window_.At(x, y) = c;
+        virtual void Write(Vector2D<int>, const PixelColor& c) override {
+        window_.Write(pos, c);
         }
         /** @brief Width は関連付けられた Window の横幅をピクセル単位で返す。 */
         virtual int Width() const override { return window_.Width(); }
