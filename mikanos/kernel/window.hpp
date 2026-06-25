@@ -55,4 +55,6 @@ class Window {
     std::vector<std::vector<PixelColor>> data_{};
     WindowWriter writer_{*this};
     std::optional<PixelColor> transparent_color_{std::nullopt};
+
+    FrameBuffer shadow_buffer_{};
 };
