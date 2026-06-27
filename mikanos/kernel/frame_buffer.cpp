@@ -29,3 +29,11 @@ Error FrameBuffer::Initialize(const FrameBufferConfig& config) {
 
   return MAKE_ERROR(Error::kSuccess);
 }
+
+int BitsPerPixel(PixelFormat format) {
+  switch (format) {
+    case kPixelRGBResv8BitPerColor: return 32;
+    case kPixelBGRResv8BitPerColor: return 32;
+  }
+  return -1; // if (bits_per_pixel <= 0)に効く
+}
