@@ -14,7 +14,7 @@ Window::Window(int width, int height, PixelFormat shadow_format) : width_{width}
   config.pixel_format = shadow_format;
 
   if (auto err = shadow_buffer_.Initialize(config)) {
-    Log(kError, "failed to initialize shadow buffer: %s at %s.%d\n",
+    Log(kError, "failed to initialize shadow buffer: %s at %s:%d\n",
         err.Name(), err.File(), err.Line());
   }
 }
@@ -31,7 +31,7 @@ void Window::DrawTo(FrameBuffer& dst, Vector2D<int> position) {
     for (int x = 0; x < Width(); ++x) {
       const auto c = At(Vector2D<int>{x, y});
       if (c != tc) {
-        writer.Write(position, Vector2D<int>{x, y}, c);
+        writer.Write(position + Vector2D<int>{x, y}, c);
       }
     }
   }
@@ -43,10 +43,6 @@ void Window::SetTransparentColor(std::optional<PixelColor> c) {
 
 Window::WindowWriter* Window::Writer() {
   return &writer_;
-}
-
-PixelColor& Window::At(int x, int y) {
-  return data_[y][x];
 }
 
 const PixelColor& Window::At(Vector2D<int> pos) const{
