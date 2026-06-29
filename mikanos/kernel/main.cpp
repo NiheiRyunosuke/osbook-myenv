@@ -53,6 +53,12 @@ void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
 
 unsigned int mouse_layer_id;
 
+char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
+PixelWriter* pixel_writer;
+
+char console_buf[sizeof(Console)];
+Console* console;
+
 int printk(const char* format, ...) {
   va_list ap;
   int result;
@@ -74,12 +80,6 @@ void MouseObserver(int8_t displacement_x, int8_t displacement_y) {
   StopLAPICTimer();
   printk("MouseObserver: elapsed = %u\n", elapsed);
 }
-
-char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
-PixelWriter* pixel_writer;
-
-char console_buf[sizeof(Console)];
-Console* console;
 
 char memory_manager_buf[sizeof(BitmapMemoryManager)];
 BitmapMemoryManager* memory_manager;
@@ -264,8 +264,14 @@ extern "C" void KernelMainNewStack(
   mouse_window->SetTransparentColor(kMouseTransparentColor);
   DrawMouseCursor(mouse_window->Writer(), {0, 0});
 
+  FrameBuffer screen;
+  if (auto err = screen.Initialize(frame_buffer_config)) {
+    Log(kError, "failed to initialize frame buffer: %s at %s:%d\n",
+        err.Name(), err.File(), err.Line());
+  } 
+
   layer_manager = new LayerManager;
-  layer_manager->SetWriter(pixel_writer);
+  layer_manager->SetWriter(&screen);
 
   auto bglayer_id = layer_manager->NewLayer()
     .SetWindow(bgwindow)
