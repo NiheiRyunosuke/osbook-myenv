@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <optional>
-#include "graphics.hpp"
+#include "graphics.hpp
+#include "frame_buffer.hpp"
 
 class Window {
   public:
@@ -11,8 +12,8 @@ class Window {
       public:
         WindowWriter(Window& window) : window_{window} {}
         /** @brief 指定された位置に指定された色を描く */
-        virtual void Write(Vector2D<int>, const PixelColor& c) override {
-        window_.Write(pos, c);
+        virtual void Write(Vector2D<int> pos, const PixelColor& c) override {
+          window_.Write(pos, c);
         }
         /** @brief Width は関連付けられた Window の横幅をピクセル単位で返す。 */
         virtual int Width() const override { return window_.Width(); }
@@ -24,7 +25,7 @@ class Window {
     };
 
     /** @brief 指定されたピクセル数の平面描画領域を作成する.  */
-    Window(int width, int height);
+    Window(int width, int height, PixelFormat shadow_format);
     ~Window() = default;
     Window(const Window& rhs) = delete;
     Window& operator=(const Window& rhs) = delete;
@@ -34,16 +35,16 @@ class Window {
      * @param writer 描画先
      * @param position writer の左上を基準とした描画位置
      */
-    void DrawTo(PixelWriter& writer, Vector2D<int> position);
+    void DrawTo(FrameBuffer& dst, Vector2D<int> position);
     /** @brief 透過色を設定する.  */
     void SetTransparentColor(std::optional<PixelColor> c);
     /** @brief このインスタンスに紐づいた WindowWriter を取得する */
     WindowWriter* Writer();
 
-    /** @brief 指定した位置のピクセルを返す */
-    PixelColor& At(int x, int y);
-    /** @brief 指定した位置のピクセルを返す */
-    const PixelColor& At(int x, int y) const;
+    /** @brief 指定した位置のピクセルを返す。 */
+    const PixelColor& At(Vector2D<int> pos) const;
+    /** @brief 指定した位置にピクセルを書き込む。 */
+    void Write(Vector2D<int> pos, PixelColor c);
 
     /** @brief 平面描画領域の横幅をピクセル単位で返す。 */
     int Width() const;
