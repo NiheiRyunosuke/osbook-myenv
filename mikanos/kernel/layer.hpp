@@ -25,7 +25,7 @@ class Layer {
     Layer& MoveRelative(Vector2D<int> pos_diff);
 
     /** @brief writerに現在設定されているウィンドウの内容を描画する */
-    void DrawTo(PixelWriter& writer) const;
+    void DrawTo(PixelWriter& screen) const;
 
   private:
     unsigned int id_;
@@ -36,7 +36,7 @@ class Layer {
 class LayerManager {
   public:
     /** @brief Drawメソッドなどで描画する際の描画先を設定する */
-    void SetWriter(PixelWriter* writer);
+    void SetWriter(FrameBuffer* screen);
     /** @brief 新しいレイヤーを参照を返す
      * 
      * 新しく生成されたレイヤーの実体はLayerManager内部のコンテナで保持される
