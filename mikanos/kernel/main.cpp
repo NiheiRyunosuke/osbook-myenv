@@ -22,13 +22,11 @@
 #include "asmfunc.h"
 #include "memory_map.hpp"
 #include "segment.hpp"
+#include "window.hpp"
 #include "layer.hpp"
 #include "paging.hpp"
 #include "memory_manager.hpp"
 #include "timer.hpp"
-
-void operator delete(void* obj) noexcept{
-}
 
 void SwitchEhci2Xhci(const pci::Device& xhc_dev) {
   bool intel_ehc_exist = false;
@@ -68,6 +66,12 @@ int printk(const char* format, ...) {
   result =vsprintf(s, format, ap);
   va_end(ap);
 
+  StartLAPICTimer();
+  console->PutString(s);
+  auto elapsed = LAPICTimerElapsed();
+  StopLAPICTimer();
+
+  sprintf(s, "[%9d]", elapsed);
   console->PutString(s);
   return result;
 }
@@ -107,7 +111,6 @@ extern "C" void KernelMainNewStack(
     const MemoryMap& memory_map_ref) {
   FrameBufferConfig frame_buffer_config{frame_buffer_config_ref};
   MemoryMap memory_map{memory_map_ref};
-  __asm__("cli");
   switch (frame_buffer_config.pixel_format) {
     case kPixelRGBResv8BitPerColor:
       pixel_writer = new(pixel_writer_buf)
@@ -182,7 +185,7 @@ extern "C" void KernelMainNewStack(
     const auto& dev = pci::devices[i];
     auto vendor_id = pci::ReadVendorId(dev.bus, dev.device, dev.function);
     auto class_code = pci::ReadClassCode(dev.bus, dev.device, dev.function);
-    printk("%d.%d.%d: vend %04x, class %08x, head %02x\n",
+    Log(kDebug, "%d.%d.%d: vend %04x, class %08x, head %02x\n",
         dev.bus, dev.device, dev.function,
         vendor_id, class_code, dev.header_type);
   }
@@ -253,14 +256,15 @@ extern "C" void KernelMainNewStack(
   const int kFrameWidth = frame_buffer_config.horizontal_resolution;
   const int kFrameHeight = frame_buffer_config.vertical_resolution;
 
-  auto bgwindow = std::make_shared<Window>(kFrameWidth, kFrameHeight);
+  auto bgwindow = std::make_shared<Window>(
+    kFrameWidth, kFrameHeight, frame_buffer_config.pixel_format);
   auto bgwriter = bgwindow->Writer();
 
   DrawDesktop(*bgwriter);
   console->SetWriter(bgwriter);
 
   auto mouse_window = std::make_shared<Window>(
-      kMouseCursorWidth, kMouseCursorHeight);
+      kMouseCursorWidth, kMouseCursorHeight, frame_buffer_config.pixel_format);
   mouse_window->SetTransparentColor(kMouseTransparentColor);
   DrawMouseCursor(mouse_window->Writer(), {0, 0});
 
