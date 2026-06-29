@@ -33,8 +33,8 @@ void Layer::DrawTo(FrameBuffer& screen) const {
   }
 }
 
-void LayerManager::SetWriter(PixelWriter* writer) {
-  writer_ = writer;
+void LayerManager::SetWriter(FrameBuffer* screen) {
+  screen_ = screen;
 }
 
 Layer& LayerManager::NewLayer() {
