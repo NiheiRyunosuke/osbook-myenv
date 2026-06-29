@@ -63,9 +63,9 @@ class RGBResv8BitPerColorPixelWriter : public FrameBufferWriter {
 };
 
 class BGRResv8BitPerColorPixelWriter : public FrameBufferWriter {
-  public:
-    using FrameBufferWriter::FrameBufferWriter;
-    virtual void Write(int x, int y, const PixelColor& c) override;
+ public:
+  using FrameBufferWriter::FrameBufferWriter;
+  virtual void Write(Vector2D<int> pos, const PixelColor& c) override;
 };
 
 void FillRectangle(PixelWriter& writer, const Vector2D<int>& pos,
