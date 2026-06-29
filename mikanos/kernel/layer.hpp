@@ -25,7 +25,7 @@ class Layer {
     Layer& MoveRelative(Vector2D<int> pos_diff);
 
     /** @brief writerに現在設定されているウィンドウの内容を描画する */
-    void DrawTo(PixelWriter& screen) const;
+    void DrawTo(FrameBuffer& screen) const;
 
   private:
     unsigned int id_;
