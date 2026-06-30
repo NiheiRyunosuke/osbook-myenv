@@ -1,5 +1,29 @@
 #include "frame_buffer.hpp"
 
+namespace {
+  int BytesPerPixel(PixelFormat format) {
+    switch (format) {
+      case kPixelRGBResv8BitPerColor: return 4;
+      case kPixelBGRResv8BitPerColor: return 4;
+    }
+    return -1;
+  }
+
+  uint8_t* FrameAddrAt(Vector2D<int> pos, const FrameBufferConfig& config) {
+    return config.frame_buffer + BytesPerPixel(config.pixel_format) *
+      (config.pixels_per_scan_line * pos.y + pos.x);
+  }
+
+  int BytesPerScanLine(const FrameBufferConfig& config) {
+    return BytesPerPixel(config.pixel_format) * config.pixels_per_scan_line;
+  }
+
+  Vector2D<int> FrameBufferSize(const FrameBufferConfig& config) {
+    return {static_cast<int>(config.horizontal_resolution),
+            static_cast<int>(config.vertical_resolution)};
+  }
+}
+
 Error FrameBuffer::Initialize(const FrameBufferConfig& config) {
   config_ = config;
 
