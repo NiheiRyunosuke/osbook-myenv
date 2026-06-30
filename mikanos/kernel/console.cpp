@@ -58,3 +58,12 @@ void Console::Refresh() {
     WriteString(*writer_, Vector2D<int>{0, 16 * row}, buffer_[row], fg_color_);
   }
 }
+
+void Console::SetWindow(const std::shared_ptr<Window>& window) {
+  if (window == window_) {
+    return;
+  }
+  window_ = window;
+  writer_ = window->Writer();
+  Refresh();
+}
