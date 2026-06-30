@@ -63,7 +63,7 @@ int printk(const char* format, ...) {
   char s[1024];
 
   va_start(ap, format);
-  result =vsprintf(s, format, ap);
+  result = vsprintf(s, format, ap);
   va_end(ap);
 
   StartLAPICTimer();
@@ -261,7 +261,7 @@ extern "C" void KernelMainNewStack(
   auto bgwriter = bgwindow->Writer();
 
   DrawDesktop(*bgwriter);
-  console->SetWriter(bgwriter);
+  console->SetWindow(bgwindow);
 
   auto mouse_window = std::make_shared<Window>(
       kMouseCursorWidth, kMouseCursorHeight, frame_buffer_config.pixel_format);
