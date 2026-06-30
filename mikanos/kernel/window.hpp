@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <optional>
-#include "graphics.hpp
+#include "graphics.hpp"
 #include "frame_buffer.hpp"
 
 class Window {
@@ -50,6 +50,8 @@ class Window {
     int Width() const;
     /** @brief 平面描画領域の高さをピクセル単位で返す。 */
     int Height() const;
+
+    void Move(Vector2D<int> dst_pos, const Rectangle<int>& src);
 
   private:
     int width_, height_;
