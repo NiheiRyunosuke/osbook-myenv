@@ -32,14 +32,14 @@ void Console::Newline() {
     return;
   }
   if (window_) {
-    Rectangle<int> move_src{{0, 16}, {8* kColumns, 16 * (kRows - 1)}};
+    Rectangle<int> move_src{{0, 16}, {8 * kColumns, 16 * (kRows - 1)}};
     window_->Move({0, 0}, move_src);
     FillRectangle(*writer_, {0, 16 * (kRows -1)}, {8 * kColumns, 16}, bg_color_); //移動して空いた最終行を塗りつぶす
   } else {
     FillRectangle(*writer_, {0, 0}, {8 * kColumns, 16 * kRows}, bg_color_);
     for (int row = 0; row < kRows -1; ++row) {
       memcpy(buffer_[row], buffer_[row + 1], kColumns + 1);
-      WriteString(*writer_, Vector2D<int>{0, 16* row}, buffer_[row], fg_color_);
+      WriteString(*writer_, Vector2D<int>{0, 16 * row}, buffer_[row], fg_color_);
     }
     memset(buffer_[kRows -1], 0, kColumns + 1);
   }
@@ -50,6 +50,7 @@ void Console::SetWriter(PixelWriter* writer) {
     return;
   }
   writer_ = writer;
+  window_.reset();
   Refresh();
 }
 
