@@ -127,8 +127,6 @@ extern "C" void KernelMainNewStack(
   printk("Welcome to MikanOS!\n");
   SetLogLevel(kWarn);
 
-  InitializeLAPICTimer();
-
   SetupSegments();
 
   const uint16_t kernel_cs = 1 << 3;
