@@ -1,6 +1,35 @@
 #include "window.hpp"
 #include "logger.hpp"
 
+namespace {
+  const int kCloseButtonWidth = 16;
+  const int kCloseButtonHeight = 14;
+  const char close_button[kCloseButtonHeight][kCloseButtonWidth + 1] = {
+    "...............@",
+    ".:::::::::::::$@",
+    ".:::::::::::::$@",
+    ".:::@@::::@@::$@",
+    ".::::@@::@@:::$@",
+    ".:::::@@@@::::$@",
+    ".::::::@@:::::$@",
+    ".:::::@@@@::::$@",
+    ".::::@@::@@:::$@",
+    ".:::@@::::@@::$@",
+    ".:::::::::::::$@",
+    ".:::::::::::::$@",
+    ".$$$$$$$$$$$$$$@",
+    "@@@@@@@@@@@@@@@@",
+  };
+
+  constexpr PixelColor ToColor(uint32_t c) {
+    return {
+      static_cast<uint8_t>((c >> 16) & 0xff),
+      static_cast<uint8_t>((c >> 8) & 0xff),
+      static_cast<uint8_t>(c & 0xff)
+    };
+  }
+}
+
 Window::Window(int width, int height, PixelFormat shadow_format) : width_{width}, height_{height} {
   data_.resize(height);
   for (int y = 0; y < height; ++y) {
@@ -77,14 +106,14 @@ void DrawWindow(PixelWriter& writer, const char* title) {
   const auto win_w = writer.Width();
   const auto win_h = writer.Height();
 
-  fill_rect({0, 0},         {win_w, 1},             0xc6c6c6);
-  fill_rect({1, 1},         {win_w - 2, 1},         0xffffff);
+  fill_rect({0, 0},         {win_w, 1},             0xc6c6c6); // 明るい灰色
+  fill_rect({1, 1},         {win_w - 2, 1},         0xffffff); // 白
   fill_rect({0, 0},         {1, win_h},             0xc6c6c6);
   fill_rect({1, 1},         {1, win_h -2},          0xffffff);
-  fill_rect({win_w - 2, 1}, {1, win_h -2},          0x848484);
-  fill_rect({win_w - 1, 0}, {1, win_h -2},          0x000000);
+  fill_rect({win_w - 2, 1}, {1, win_h -2},          0x848484); // 灰色
+  fill_rect({win_w - 1, 0}, {1, win_h -2},          0x000000); // 黒
   fill_rect({2, 2},         {win_w - 4, win_h - 4}, 0xc6c6c6);
-  fill_rect({3, 3},         {win_w - 6, 18},        0x000084);
+  fill_rect({3, 3},         {win_w - 6, 18},        0x000084); // 濃い青
   fill_rect({1, win_h - 2}, {win_w - 2, 1},         0x848484);
   fill_rect({0, win_h  -1}, {win_w, 1},             0x000000);
 
