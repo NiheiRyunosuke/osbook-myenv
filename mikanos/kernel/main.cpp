@@ -301,6 +301,12 @@ extern "C" void KernelMainNewStack(
 
   // イベント待機
   while (true) {
+    ++count;
+    sprintf(str, "%010u", count);
+    FillRectangle(*main_window->Writer(), {24, 28}, {8 * 10, 16}, {0xc6, 0xc6, 0xc6}); // 前回のカウントを塗り潰しで上書き
+    WriteString(*main_window->Writer(), {24, 28}, str, {0, 0, 0}); // 黒色で新しいカウント文字列を描画
+    layer_manager->Draw();
+
     __asm__("cli");
     if (main_queue.Count() == 0) {
       __asm__("sti\n\thlt");
