@@ -30,9 +30,9 @@ class Window {
     Window(const Window& rhs) = delete;
     Window& operator=(const Window& rhs) = delete;
 
-    /** @brief 与えられた PixelWriter にこのウィンドウの表示領域を描画する。
+    /** @brief 与えられた FrameBuffer にこのウィンドウの表示領域を描画する。
      * 
-     * @param writer 描画先
+     * @param dst 描画先
      * @param position writer の左上を基準とした描画位置
      */
     void DrawTo(FrameBuffer& dst, Vector2D<int> position);
@@ -61,3 +61,5 @@ class Window {
 
     FrameBuffer shadow_buffer_{};
 };
+
+void DrawWindow(PixelWriter& writer, const char* title);
