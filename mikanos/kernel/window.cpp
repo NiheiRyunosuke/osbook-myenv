@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "logger.hpp"
+#include "font.hpp"
 
 namespace {
   const int kCloseButtonWidth = 16;
