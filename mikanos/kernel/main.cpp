@@ -273,7 +273,7 @@ extern "C" void KernelMainNewStack(
   if (auto err = screen.Initialize(frame_buffer_config)) {
     Log(kError, "failed to initialize frame buffer: %s at %s:%d\n",
         err.Name(), err.File(), err.Line());
-  } 
+  }
 
   layer_manager = new LayerManager;
   layer_manager->SetWriter(&screen);
@@ -282,13 +282,20 @@ extern "C" void KernelMainNewStack(
     .SetWindow(bgwindow)
     .Move({0, 0})
     .ID();
-  mouse_layer_id = layer_manager->NewLayer()
+  
+    mouse_layer_id = layer_manager->NewLayer()
     .SetWindow(mouse_window)
     .Move(mouse_position)
     .ID();
   
+  auto main_window_layer_id = layer_manager->NewLayer()
+    .SetWindow(main_window)
+    .Move({300, 100})
+    .ID();
+
   layer_manager->UpDown(bglayer_id, 0);
   layer_manager->UpDown(mouse_layer_id, 1);
+  layer_manager->UpDown(main_window_layer_id, 1);
   layer_manager->Draw();
 
   // イベント待機
