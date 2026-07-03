@@ -267,7 +267,7 @@ extern "C" void KernelMainNewStack(
       160, 68, frame_buffer_config.pixel_format);
   DrawWindow(*main_window->Writer(), "Hello Window");
   WriteString(*main_window->Writer(), {24, 28}, "Welcome to", {0, 0, 0});
-  WriteString(*main_window->Writer(), {24, 24}, "MikanOS world!", {0, 0, 0});
+  WriteString(*main_window->Writer(), {24, 44}, "MikanOS world!", {0, 0, 0});
 
   FrameBuffer screen;
   if (auto err = screen.Initialize(frame_buffer_config)) {
