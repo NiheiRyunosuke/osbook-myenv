@@ -296,6 +296,9 @@ extern "C" void KernelMainNewStack(
   layer_manager->UpDown(main_window_layer_id, 1);
   layer_manager->Draw();
 
+  char str[128];
+  unsigned int count = 0;
+
   // イベント待機
   while (true) {
     __asm__("cli");
