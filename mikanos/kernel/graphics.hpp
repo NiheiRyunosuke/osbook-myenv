@@ -47,6 +47,20 @@ struct Rectangle {
   Vector2D<T> pos, size;
 };
 
+template <typename T, typename U>
+Rectangle<T> operator&(const Rectangle<T>& lhs, const Rectangle<U>& rhs) {
+  const auto lhs_end = lhs.pos + lhs.size;
+  const auto rhs_end = rhs.pos + rhs.size;
+  if (lhs_end.x < rhs.pos.x || lhs_end.y < rhs.pos.y ||
+      rhs_end.x < lhs.pos.x || rhs_end.y < lhs.pos.y) {
+    return {{0, 0}, {0, 0}};
+  }
+
+  auto new_pos = ElementMax(lhs.pos, rhs.pos);
+  auto new_size = ElementMin(lhs_end, rhs_end) - new_pos;
+  return {new_pos, new_size};
+}
+
 class PixelWriter {
  public:
   virtual ~PixelWriter() = default;
