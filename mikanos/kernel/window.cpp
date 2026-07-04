@@ -49,23 +49,25 @@ Window::Window(int width, int height, PixelFormat shadow_format) : width_{width}
   }
 }
 
-void Window::DrawTo(FrameBuffer& dst, Vector2D<int> position) {
+void Window::DrawTo(FrameBuffer& dst, Vector2D<int> pos, const Rectangle<int>& area) {
   if (!transparent_color_) { // 透明色が設定されていないなら
-    dst.Copy(position, shadow_buffer_);
+    Rectangle<int> window_area{pos, Size()};
+    Rectangle<int> intersection = area & window_area;
+    dst.Copy(intersection.pos, shadow_buffer_, {intersection.pos - pos, intersection.size});
     return;
   }
 
   const auto tc = transparent_color_.value();
   auto& writer = dst.Writer();
-  for (int y = std::max(0, 0 - position.y);
-      y < std::min(Height(), writer.Height() - position.y);
+  for (int y = std::max(0, 0 - pos.y);
+      y < std::min(Height(), writer.Height() - pos.y);
       ++y) {
-    for (int x = std::max(0, 0 - position.x);
-        x < std::min(Width(), writer.Width() - position.x);
+    for (int x = std::max(0, 0 - pos.x);
+        x < std::min(Width(), writer.Width() - pos.x);
         ++x) {
       const auto c = At(Vector2D<int>{x, y});
       if (c != tc) {
-        writer.Write(position + Vector2D<int>{x, y}, c);
+        writer.Write(pos + Vector2D<int>{x, y}, c);
       }
     }
   }
@@ -96,6 +98,10 @@ int Window::Height() const {
   return height_;
 }
 
+Vector2D<int> Window::Size() const {
+  return {width_, height_};
+}
+
 void Window::Move(Vector2D<int> dst_pos, const Rectangle<int>& src) {
   shadow_buffer_.Move(dst_pos, src);
 }
@@ -112,7 +118,7 @@ void DrawWindow(PixelWriter& writer, const char* title) {
   fill_rect({0, 0},         {1, win_h},             0xc6c6c6);
   fill_rect({1, 1},         {1, win_h -2},          0xffffff);
   fill_rect({win_w - 2, 1}, {1, win_h -2},          0x848484); // 灰色
-  fill_rect({win_w - 1, 0}, {1, win_h -2},          0x000000); // 黒
+  fill_rect({win_w - 1, 0}, {1, win_h},             0x000000); // 黒
   fill_rect({2, 2},         {win_w - 4, win_h - 4}, 0xc6c6c6);
   fill_rect({3, 3},         {win_w - 6, 18},        0x000084); // 濃い青
   fill_rect({1, win_h - 2}, {win_w - 2, 1},         0x848484);
@@ -128,7 +134,7 @@ void DrawWindow(PixelWriter& writer, const char* title) {
       } else if (close_button[y][x] == '$') {
         c = ToColor(0x848484);
       } else if (close_button[y][x] == ':') {
-        c = ToColor(0x6c6c6c);
+        c = ToColor(0xc6c6c6);
       }
       writer.Write({win_w - 5 - kCloseButtonWidth + x, 5 + y}, c);
     } 
