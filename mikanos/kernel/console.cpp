@@ -21,7 +21,7 @@ void Console::PutString(const char* s) {
     ++s;
   }
   if (layer_manager) {
-    layer_manager->Draw();
+    layer_manager->Draw(layer_id_);
   }
 }
 
