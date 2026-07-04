@@ -27,9 +27,9 @@ Layer& Layer::MoveRelative(Vector2D<int> pos_diff) {
   return *this;
 }
 
-void Layer::DrawTo(FrameBuffer& screen) const {
+void Layer::DrawTo(FrameBuffer& screen, const Rectangle<int>& area) const {
   if (window_) {
-    window_->DrawTo(screen, pos_);
+    window_->DrawTo(screen, pos_, area);
   }
 }
 
