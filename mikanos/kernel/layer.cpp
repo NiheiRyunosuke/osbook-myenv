@@ -17,6 +17,10 @@ std::shared_ptr<Window> Layer::GetWindow() const {
   return window_;
 }
 
+Vector2D<int> Layer::GetPosition() const {
+  return pos_;
+}
+
 Layer& Layer::Move(Vector2D<int> pos) {
   pos_ = pos;
   return *this;
@@ -53,12 +57,22 @@ Layer* LayerManager::FindLayer(unsigned int id) {
   return it->get();
 }
 
-void LayerManager::Move(unsigned int id, Vector2D<int> new_position) {
-  FindLayer(id)->Move(new_position);
+void LayerManager::Move(unsigned int id, Vector2D<int> new_pos) {
+  auto layer = FindLayer(id);
+  const auto window_size = layer->GetWindow()->Size();
+  const auto old_pos = layer->GetPosition();
+  layer->Move(new_pos);
+  Draw({old_pos, window_size});
+  Draw(id);
 }
 
 void LayerManager::MoveRelative(unsigned int id, Vector2D<int> pos_diff) {
-  FindLayer(id)->MoveRelative(pos_diff);
+  auto layer = FindLayer(id);
+  const auto window_size = layer->GetWindow()->Size();
+  const auto old_pos = layer->GetPosition();
+  layer->MoveRelative(pos_diff);
+  Draw({old_pos, window_size});
+  Draw(id);
 }
 
 void LayerManager::Draw(const Rectangle<int>& area) const {
