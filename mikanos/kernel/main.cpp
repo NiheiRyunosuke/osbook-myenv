@@ -267,6 +267,10 @@ extern "C" void KernelMainNewStack(
       160, 52, frame_buffer_config.pixel_format);
   DrawWindow(*main_window->Writer(), "Hello Window");
 
+  auto console_window = std::make_shared<Window>(
+    Console::kColumns * 8, Console::kRows * 16, frame_buffer_config.pixel_format);
+  console->SetWindow(console_window);
+
   FrameBuffer screen;
   if (auto err = screen.Initialize(frame_buffer_config)) {
     Log(kError, "failed to initialize frame buffer: %s at %s:%d\n",
