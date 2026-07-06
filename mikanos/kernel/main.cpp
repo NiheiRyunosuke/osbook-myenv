@@ -295,6 +295,11 @@ extern "C" void KernelMainNewStack(
     .Move({300, 100})
     .ID();
 
+  console->SetLayerID(layer_manager->NewLayer()
+    .SetWindow(console_window)
+    .Move({0, 0})
+    .ID());
+
   layer_manager->UpDown(bglayer_id, 0);
   layer_manager->UpDown(console->LayerID(), 1);
   layer_manager->UpDown(main_window_layer_id, 2);
