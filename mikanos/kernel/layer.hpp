@@ -44,7 +44,8 @@ class LayerManager {
     Layer& NewLayer();
 
     /** @brief 現在表示状態にあるレイヤーを描画する */
-    void Draw() const;
+    void Draw(const Rectangle<int>& area) const;
+    void Draw(unsigned int id) const;
 
     /** @brief レイヤーの位置情報を指定された絶対座標へと更新する、再描画はしない */
     void Move(unsigned int id, Vector2D<int> new_position);
