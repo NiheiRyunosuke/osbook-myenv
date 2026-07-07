@@ -81,8 +81,9 @@ void LayerManager::MoveRelative(unsigned int id, Vector2D<int> pos_diff) {
 
 void LayerManager::Draw(const Rectangle<int>& area) const {
   for (auto layer : layer_stack_) {
-    layer->DrawTo(*screen_, area);
+    layer->DrawTo(back_buffer_, area);
   }
+  screen_->Copy(area.pos, back_buffer_, area);
 }
 
 void LayerManager::Draw(unsigned int id) const {
