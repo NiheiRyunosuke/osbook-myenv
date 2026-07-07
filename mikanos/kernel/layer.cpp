@@ -39,6 +39,10 @@ void Layer::DrawTo(FrameBuffer& screen, const Rectangle<int>& area) const {
 
 void LayerManager::SetWriter(FrameBuffer* screen) {
   screen_ = screen;
+
+  FrameBufferConfig back_config = screen->Config();
+  back_config.frame_buffer = nullptr;
+  back_buffer_.Initialize(back_config);
 }
 
 Layer& LayerManager::NewLayer() {
