@@ -96,9 +96,10 @@ void LayerManager::Draw(unsigned int id) const {
       draw = true;
     }
     if (draw) {
-      layer->DrawTo(*screen_, window_area);
+      layer->DrawTo(back_buffer_, window_area);
     }
   }
+  screen->Copy(window_area.pos, back_buffer_, window_area);
 }
 
 void LayerManager::Hide(unsigned int id) {
