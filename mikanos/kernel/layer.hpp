@@ -49,9 +49,9 @@ class LayerManager {
     void Draw(const Rectangle<int>& area) const;
     void Draw(unsigned int id) const;
 
-    /** @brief レイヤーの位置情報を指定された絶対座標へと更新する、再描画はしない */
+    /** @brief レイヤーの位置情報を指定された絶対座標へと更新する。再描画する。 */
     void Move(unsigned int id, Vector2D<int> new_position);
-    /** @brief レイヤーの位置情報を指定された相対座標へと更新する、再描画はしない */
+    /** @brief レイヤーの位置情報を指定された相対座標へと更新する。再描画する。 */
     void MoveRelative(unsigned int id, Vector2D<int> pos_diff);
 
     /** @brief レイヤーの高さ方向の位置を指定された位置に移動する 
@@ -63,6 +63,8 @@ class LayerManager {
     void UpDown(unsigned int id, int new_height);
     /** @brief レイヤーを非表示とする */
     void Hide(unsigned int id);
+    /** @brief 指定された座標にウィンドウを持つ最も上に表示されているレイヤーを探す。 */
+    Layer* FindLayerByPosition(Vector2D<int> pos, unsigned int exclude_id) const;
 
   private:
     FrameBuffer* screen_{nullptr};
