@@ -1,4 +1,5 @@
 #include "segment.hpp"
+
 #include "asmfunc.h"
 
 namespace {
@@ -39,9 +40,16 @@ void SetDataSegment(SegmentDescriptor& desc,
   desc.bits.default_operation_size = 1; // 32-bit stack segment
 }
 
-void SetupSegments() { 
+void SetupSegments() {
   gdt[0].data = 0;
   SetCodeSegment(gdt[1], DescriptorType::kExecuteRead, 0, 0, 0xfffff);
   SetDataSegment(gdt[2], DescriptorType::kReadWrite, 0, 0, 0xfffff);
   LoadGDT(sizeof(gdt) - 1, reinterpret_cast<uintptr_t>(&gdt[0]));
+}
+
+void InitializeSegmentation() {
+  SetupSegments();
+
+  SetDSAll(kKernelDS);
+  SetCSSS(kKernelCS, kKernelSS);
 }

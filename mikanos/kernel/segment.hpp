@@ -1,3 +1,9 @@
+/**
+ * @file segment.hpp
+ *
+ * セグメンテーション用のプログラムを集めたファイル．
+ */
+
 #pragma once
 
 #include <array>
@@ -29,11 +35,15 @@ void SetCodeSegment(SegmentDescriptor& desc,
                     unsigned int descriptor_privilege_level,
                     uint32_t base,
                     uint32_t limit);
-
 void SetDataSegment(SegmentDescriptor& desc,
                     DescriptorType type,
                     unsigned int descriptor_privilege_level,
                     uint32_t base,
                     uint32_t limit);
 
+const uint16_t kKernelCS = 1 << 3;
+const uint16_t kKernelSS = 2 << 3;
+const uint16_t kKernelDS = 0;
+
 void SetupSegments();
+void InitializeSegmentation();
