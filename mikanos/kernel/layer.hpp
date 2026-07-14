@@ -20,10 +20,15 @@ class Layer {
     std::shared_ptr<Window> GetWindow() const;
 
     Vector2D<int> GetPosition() const;
+    /** @brief true でレイヤーがドラッグ移動可能となる。 */
+    Layer& SetDraggable(bool draggable);
+    /** @brief レイヤーがドラッグ移動可能なら true を返す。 */
+    bool IsDraggable() const;
+
 
     /** @brief レイヤーの位置情報を指定された絶対座標へと更新する。再描画はしない */
     Layer& Move(Vector2D<int> pos);
-    /** @brief レイヤーの位置情報を指定された絶対座標へと更新する。再描画はしない */
+    /** @brief レイヤーの位置情報を指定された相対座標へと更新する。再描画はしない。 */
     Layer& MoveRelative(Vector2D<int> pos_diff);
 
     /** @brief writerに現在設定されているウィンドウの内容を描画する */
@@ -31,8 +36,9 @@ class Layer {
 
   private:
     unsigned int id_;
-    Vector2D<int> pos_;
-    std::shared_ptr<Window> window_;
+    Vector2D<int> pos_{};
+    std::shared_ptr<Window> window_{};
+    bool draggable_{false};
 };
 
 class LayerManager {
@@ -50,7 +56,7 @@ class LayerManager {
     void Draw(unsigned int id) const;
 
     /** @brief レイヤーの位置情報を指定された絶対座標へと更新する。再描画する。 */
-    void Move(unsigned int id, Vector2D<int> new_position);
+    void Move(unsigned int id, Vector2D<int> new_pos);
     /** @brief レイヤーの位置情報を指定された相対座標へと更新する。再描画する。 */
     void MoveRelative(unsigned int id, Vector2D<int> pos_diff);
 
