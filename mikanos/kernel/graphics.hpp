@@ -1,9 +1,10 @@
 #pragma once
+
 #include <algorithm>
 #include "frame_buffer_config.hpp"
 
 struct PixelColor {
-    uint8_t r, g, b;
+  uint8_t r, g, b;
 };
 
 inline bool operator==(const PixelColor& lhs, const PixelColor& rhs) {
@@ -102,9 +103,9 @@ class FrameBufferWriter : public PixelWriter {
 };
 
 class RGBResv8BitPerColorPixelWriter : public FrameBufferWriter {
-  public:
-    using FrameBufferWriter::FrameBufferWriter;
-    virtual void Write(Vector2D<int> pos, const PixelColor& c) override;
+ public:
+  using FrameBufferWriter::FrameBufferWriter;
+  virtual void Write(Vector2D<int> pos, const PixelColor& c) override;
 };
 
 class BGRResv8BitPerColorPixelWriter : public FrameBufferWriter {
@@ -113,13 +114,19 @@ class BGRResv8BitPerColorPixelWriter : public FrameBufferWriter {
   virtual void Write(Vector2D<int> pos, const PixelColor& c) override;
 };
 
-void FillRectangle(PixelWriter& writer, const Vector2D<int>& pos,
-                  const Vector2D<int>& size, const PixelColor& c);
-
 void DrawRectangle(PixelWriter& writer, const Vector2D<int>& pos,
-                  const Vector2D<int>& size, const PixelColor& c);
+                   const Vector2D<int>& size, const PixelColor& c);
+
+void FillRectangle(PixelWriter& writer, const Vector2D<int>& pos,
+                   const Vector2D<int>& size, const PixelColor& c);
 
 const PixelColor kDesktopBGColor{45, 118, 237};
 const PixelColor kDesktopFGColor{255, 255, 255};
 
 void DrawDesktop(PixelWriter& writer);
+
+extern FrameBufferConfig screen_config;
+extern PixelWriter* screen_writer;
+Vector2D<int> ScreenSize();
+
+void InitializeGraphics(const FrameBufferConfig& screen_config);
