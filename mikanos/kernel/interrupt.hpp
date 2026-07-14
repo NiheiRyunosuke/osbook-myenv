@@ -8,16 +8,10 @@
 
 #include <array>
 #include <cstdint>
+#include <deque>
 
-enum class DescriptorType {
-  kUpper8Bytes   = 0,
-  kLDT           = 2,
-  kTSSAvailable = 9,
-  kTSSBusy       = 11,
-  kCallGate      = 12,
-  kInterruptGate = 14,
-  kTrapGate      = 15,
-};
+#include "x86_descriptor.hpp"
+#include "message.hpp"
 
 union InterruptDescriptorAttribute {
   uint16_t data;
@@ -76,3 +70,5 @@ struct InterruptFrame {
 };
 
 void NotifyEndOfInterrupt();
+
+void InitializeInterrupt(std::deque<Message>* msg_queue);
