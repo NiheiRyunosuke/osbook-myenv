@@ -24,6 +24,7 @@
 #include "paging.hpp"
 #include "memory_manager.hpp"
 #include "message.hpp"
+#include "timer.hpp"
 
 int printk(const char* format, ...) {
   va_list ap;
@@ -109,6 +110,9 @@ extern "C" void KernelMainNewStack(
     switch (msg.type) {
     case Message::kInterruptXHCI:
       usb::xhci::ProcessEvents();
+      break;
+    case Message::kInterruptLAPICTimer:
+      printk("Timer interrupt\n");
       break;
     default:
       Log(kError, "Unknown message type: %d\n", msg.type);
