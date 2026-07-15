@@ -1,4 +1,5 @@
 #include "timer.hpp"
+#include "interrupt.hpp"
 
 namespace {
   const uint32_t kCountMax = 0xffffffffu;
