@@ -5,7 +5,7 @@
 #include <vector>
 #include "message.hpp"
 
-void InitializeLAPICTimer();
+void InitializeLAPICTimer(std::deque<Message>& msg_queue);
 void StartLAPICTimer();
 uint32_t LAPICTimerElapsed();
 void StopLAPICTimer();
