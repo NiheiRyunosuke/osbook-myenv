@@ -86,7 +86,10 @@ extern "C" void KernelMainNewStack(
 
   char str[128];
 
-  InitializeLAPICTimer();
+  InitializeLAPICTimer(*main_queue);
+
+  timer_manager->AddTimer(Timer(200, 2));
+  timer_manager->AddTimer(Timer(600, -1));
 
   while (true) {
     __asm__("cli");
