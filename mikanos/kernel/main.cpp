@@ -86,12 +86,13 @@ extern "C" void KernelMainNewStack(
   InitializeMouse();
   layer_manager->Draw({{0, 0}, ScreenSize()});
 
-  char str[128];
-
+  acpi::initialize(acpi_table);
   InitializeLAPICTimer(*main_queue);
 
   timer_manager->AddTimer(Timer(200, 2));
   timer_manager->AddTimer(Timer(600, -1));
+
+  char str[128];
 
   while (true) {
     __asm__("cli");
