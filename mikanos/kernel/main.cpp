@@ -25,6 +25,7 @@
 #include "memory_manager.hpp"
 #include "message.hpp"
 #include "timer.hpp"
+#include "acpi.hpp"
 
 int printk(const char* format, ...) {
   va_list ap;
@@ -61,7 +62,8 @@ alignas(16) uint8_t kernel_main_stack[1024 * 1024];
 
 extern "C" void KernelMainNewStack(
     const FrameBufferConfig& frame_buffer_config_ref,
-    const MemoryMap& memory_map_ref) {
+    const MemoryMap& memory_map_ref,
+    const acpi::RSDP& acpi_table) {
   MemoryMap memory_map{memory_map_ref};
 
   InitializeGraphics(frame_buffer_config_ref);
@@ -115,8 +117,13 @@ extern "C" void KernelMainNewStack(
     case Message::kInterruptXHCI:
       usb::xhci::ProcessEvents();
       break;
-    case Message::kInterruptLAPICTimer:
-      printk("Timer interrupt\n");
+    case Message::kTimerTimeout:
+      printk("Timer: timeout = %lu, value = %d\n",
+          msg.arg.timer.timeout, msg.arg.timer.value);
+      if (msg.arg.timer.value > 0) {
+        timer_manager->AddTimer(Timer(
+            msg.arg.timer.timeout + 100, msg.arg.timer.value + 1));
+      }
       break;
     default:
       Log(kError, "Unknown message type: %d\n", msg.type);
