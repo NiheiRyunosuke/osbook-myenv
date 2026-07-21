@@ -54,6 +54,15 @@ bool DescriptionHeader::IsValid(const char* expected_signature) const {
   return true;
 }
 
+const DescriptionHeader& XSDT::operator[](size_t i) const {
+  auto entries = reinterpret_cast<const uint64_t*>(&this->header + 1);
+  return *reinterpret_cast<const DescriptionHeader*>(entries[i]);
+}
+
+size_t XSDT::Count() const {
+  return (this->header.length - sizeof(DescriptionHeader)) / sizeof(uint64_t);
+}
+
 void Initialize(const RSDP& rsdp) {
   if (!rsdp.IsValid()) {
     Log(kError, "RSDP is not valid\n");
