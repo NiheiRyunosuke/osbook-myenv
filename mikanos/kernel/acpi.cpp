@@ -68,4 +68,24 @@ void Initialize(const RSDP& rsdp) {
     Log(kError, "RSDP is not valid\n");
     exit(1);
   }
+
+  const XSDT& xsdt = *reinterpret_cast<const XSDT*>(rsdp.xsdt_address);
+  if (!xsdt.header.IsValid("XSDT")) {
+    Log(kError, "XSDT is not valid\n");
+    exit(1);
+  }
+
+  fadt = nullptr;
+  for (int i = 0; i < xsdt.Count(); ++i) {
+    const auto& entry = xsdt[i];
+    if (entry.IsValid("FACP")) { // FACP is the signature of FADT
+      fadt = reinterpret_cast<const FADT*>(&entry);
+      break;
+    }
+  }
+
+  if (fadt == nullptr) {
+    Log(kError, "FADT is not found\n");
+    exit(1);
+  }
 }
