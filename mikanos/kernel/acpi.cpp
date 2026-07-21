@@ -42,6 +42,18 @@ bool RSDP::IsValid() const {
   return true;
 }
 
+bool DescriptionHeader::IsValid(const char* expected_signature) const {
+  if (strncmp(this->signature, expected_signature, 4) != 0) {
+    Log(kDebug, "invalid signature: %.4s\n", this->signature);
+    return false;
+  }
+  if (auto sum = SumBytes(this, this->length); sum != 0) {
+    Log(kDebug, "sum of %u bytes must be 0: %d\n", this->length, sum);
+    return false;
+  }
+  return true;
+}
+
 void Initialize(const RSDP& rsdp) {
   if (!rsdp.IsValid()) {
     Log(kError, "RSDP is not valid\n");
