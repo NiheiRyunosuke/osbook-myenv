@@ -46,6 +46,18 @@ struct XSDT {
   size_t Count() const;
 } __attribute__((packed));
 
+struct FADT {
+  DescriptionHeader header;
+
+  char reserved1[76 - sizeof(header)];
+  uint32_t pm_tmr_blk;
+  char reserved2[112 - 80];
+  uint32_t flags;
+  char reserved3[276 - 116];
+} __attribute__((packed));
+
+extern const FADT* fadt;
+
 void Initialize(const RSDP& rsdp);
 
 } // namespace acpi
