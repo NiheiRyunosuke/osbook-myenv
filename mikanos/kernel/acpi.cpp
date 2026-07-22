@@ -89,3 +89,17 @@ void Initialize(const RSDP& rsdp) {
     exit(1);
   }
 }
+
+void WaitMilliseconds(unsigned long msec) {
+  const bool pm_timer_32 = (fadt->flags >> 8) & 1;
+  const uint32_t start = IoIn32(fadt->pm_tmr_blk);
+  uint32_t end = start + kPMTimerFreq * msec / 1000;
+  if (!pm_timer_32) {
+    end &= 0x00ffffffu;
+  }
+
+  if (end < start) { // overflow
+    while (IoIn32(fadt->pm_tmr_blk) >= start);
+  }
+  while (IoIn32(fadt->pm_tmr_blk) < end);
+}
