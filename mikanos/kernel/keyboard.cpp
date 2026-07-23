@@ -22,11 +22,17 @@ const char keycode_map[256] = {
 } // namespace
 
 void InitializeKeyboard(std::deque<Message>& msg_queue) {
-  usb::HIDKeyboardDriver::default_observer =
-    [&msg_queue](uint8_t keycode) {
+  usb::HIDKeyboardDriver::default_observer = 
+    [&msg_queue](uint8_t modifier, uint8_t keycode) {
+      const bool shift = (modifier & (kLShiftBitMask | kRShiftMask)) != 0;
+      char ascii = keycode_map[keycode];
+      if (shift) {
+        ascii = keycode_map_shifted[keycode];
+      }
       Message msg{Message::kKeyPush};
+      msg.arg.keyboard.modifier = modifier;
       msg.arg.keyboard.keycode = keycode;
-      msg.arg.keyboard.ascii = keycode_map[keycode];
+      msg.arg.keyboard.ascii = ascii;
       msg_queue.push_back(msg);
     };
 }
