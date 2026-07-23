@@ -26,6 +26,7 @@
 #include "message.hpp"
 #include "timer.hpp"
 #include "acpi.hpp"
+#include "keyboard.hpp"
 
 int printk(const char* format, ...) {
   va_list ap;
@@ -89,8 +90,7 @@ extern "C" void KernelMainNewStack(
   acpi::Initialize(acpi_table);
   InitializeLAPICTimer(*main_queue);
 
-  timer_manager->AddTimer(Timer(200, 2));
-  timer_manager->AddTimer(Timer(600, -1));
+  InitializeKeyboard(*main_queue);
 
   char str[128];
 
