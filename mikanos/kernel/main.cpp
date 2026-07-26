@@ -144,6 +144,13 @@ extern "C" void KernelMainNewStack(
 
   InitializeKeyboard(*main_queue);
 
+  const int kTextboxCursorTimer = 1;
+  const int kTimer05Sec = static_cast<int>(kTimerFreq * 0.5);
+  __asm__("sti");
+  timer_manager->AddTimer(Timer{kTimer05Sec, kTextboxCursorTimer});
+  __asm__("sti");
+  bool textbox_cursor_visible = false;
+
   char str[128];
 
   while (true) {
