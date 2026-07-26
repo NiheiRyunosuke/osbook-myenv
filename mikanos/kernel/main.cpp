@@ -87,12 +87,17 @@ void InputTextWindow(char c) {
 
   const int max_chars = (text_window->Width() -16 ) / 8;
   if (c == '\b' && text_window_index > 0) {
+    DrawTextCursor(false);
     --text_window_index;
     FillRectangle(*text_window->Writer(), pos(), {8, 16}, ToColor(0xffffff));
+    DrawTextCursor(true);
   } else if (c >= ' ' && text_window_index < max_chars) {
+    DrawTextCursor(false);
     WriteAscii(*text_window->Writer(), pos(), c, ToColor(0));
     ++text_window_index;
+    DrawTextCursor(true);
   }
+
   layer_manager->Draw(text_window_layer_id);
 }
 
