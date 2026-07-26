@@ -77,6 +77,25 @@ void InitializeTextWindow() {
   layer_manager->UpDown(text_window_layer_id, std::numeric_limits<int>::max());
 }
 
+int text_window_index;
+void InputTextWindow(char c) {
+  if (c == 0) {
+    return;
+  }
+
+  auto pos = []() { return Vector2D<int>{8 + 8*text_window_index, 24 + 6}; };
+
+  const int max_chars = (text_window->Width() -16 ) / 8;
+  if (c == '\b' && text_window_index > 0) {
+    --text_window_index;
+    FillRectangle(*text_window->Writer(), pos(), {8, 16}, ToColor(0xffffff));
+  } else if (c >= ' ' && text_window_index < max_chars) {
+    WriteAscii(*text_window->Writer(), pos(), c, ToColor(0));
+    ++text_window_index;
+  }
+  layer_manager->Draw(text_window_layer_id);
+}
+
 std::deque<Message>* main_queue;
 
 alignas(16) uint8_t kernel_main_stack[1024 * 1024];
