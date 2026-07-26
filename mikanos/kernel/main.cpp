@@ -104,6 +104,7 @@ extern "C" void KernelMainNewStack(
 
   InitializeLayer();
   InitializeMainWindow();
+  InitializeTextWindow();
   InitializeMouse();
   layer_manager->Draw({{0, 0}, ScreenSize()});
 
@@ -141,9 +142,7 @@ extern "C" void KernelMainNewStack(
     case Message::kTimerTimeout:
       break;
     case Message::kKeyPush:
-      if (msg.arg.keyboard.ascii != 0) {
-        printk("%c", msg.arg.keyboard.ascii);
-      }
+      InputTextWindow(msg.arg.keyboard.ascii);
       break;
     default:
       Log(kError, "Unknown message type: %d\n", msg.type);
