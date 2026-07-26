@@ -146,7 +146,7 @@ extern "C" void KernelMainNewStack(
 
   const int kTextboxCursorTimer = 1;
   const int kTimer05Sec = static_cast<int>(kTimerFreq * 0.5);
-  __asm__("sti");
+  __asm__("cli");
   timer_manager->AddTimer(Timer{kTimer05Sec, kTextboxCursorTimer});
   __asm__("sti");
   bool textbox_cursor_visible = false;
@@ -178,6 +178,15 @@ extern "C" void KernelMainNewStack(
       usb::xhci::ProcessEvents();
       break;
     case Message::kTimerTimeout:
+      if (msg.arg.timer.value == kTextboxCursorTimer) {
+        __asm__("cli");
+        timer_manager->AddTimer(
+          Timer{msg.arg.timer.timeout + kTimer05Sec, kTextboxCursorTimer});
+        __asm__("sti");
+        textbox_cursor_visible = !textbox_cursor_visible;
+        DrawTextCursor(textbox_cursor_visible);
+        layer_manager->Draw(text_window_layer_id);
+      }
       break;
     case Message::kKeyPush:
       InputTextWindow(msg.arg.keyboard.ascii);
