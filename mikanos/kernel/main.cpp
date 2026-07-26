@@ -57,6 +57,26 @@ void InitializeMainWindow() {
   layer_manager->UpDown(main_window_layer_id, std::numeric_limits<int>::max());
 }
 
+std::shared_ptr<Window> text_window;
+unsigned int text_window_layer_id;
+void InitializeTextWindow() {
+  const int win_w = 160;
+  const int win_h = 52;
+
+  text_window = std::make_shared<Window>(
+    win_w, win_h, screen_config.pixel_format);
+  DrawWindow(*text_window->Writer(), "Text Box Test");
+  DrawTextbox(*text_window->Writer(), {4, 24}, {win_w - 8, win_h - 24 - 4});
+
+  text_window_layer_id = layer_manager->NewLayer()
+    .SetWindow(text_window)
+    .SetDraggable(true)
+    .Move({350, 200})
+    .ID();
+  
+  layer_manager->UpDown(text_window_layer_id, std::numeric_limits<int>::max());
+}
+
 std::deque<Message>* main_queue;
 
 alignas(16) uint8_t kernel_main_stack[1024 * 1024];
@@ -119,11 +139,10 @@ extern "C" void KernelMainNewStack(
       usb::xhci::ProcessEvents();
       break;
     case Message::kTimerTimeout:
-      printk("Timer: timeout = %lu, value = %d\n",
-          msg.arg.timer.timeout, msg.arg.timer.value);
-      if (msg.arg.timer.value > 0) {
-        timer_manager->AddTimer(Timer(
-            msg.arg.timer.timeout + 100, msg.arg.timer.value + 1));
+      break;
+    case Message::kKeyPush:
+      if (msg.arg.keyboard.ascii != 0) {
+        printk("%c", msg.arg.keyboard.ascii);
       }
       break;
     default:
