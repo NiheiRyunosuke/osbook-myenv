@@ -178,6 +178,7 @@ extern "C" void KernelMainNewStack(
   InitializeLayer();
   InitializeMainWindow();
   InitializeTextWindow();
+  InitializeTaskBWindow();
   InitializeMouse();
   layer_manager->Draw({{0, 0}, ScreenSize()});
 
@@ -192,6 +193,23 @@ extern "C" void KernelMainNewStack(
   timer_manager->AddTimer(Timer{kTimer05Sec, kTextboxCursorTimer});
   __asm__("sti");
   bool textbox_cursor_visible = false;
+
+  std::vector<uint64_t> task_b_stack(1024);
+  uint64_t task_b_stack_end = reinterpret_cast<uint64_t>(&task_b_stack[1024]);
+
+  memset(&task_b_ctx, 0, sizeof(task_b_ctx));
+  task_b_ctx.rip = reinterpret_cast<uint64_t>(TaskB);
+  task_b_ctx.rdi = 1;
+  task_b_ctx.rsi = 42;
+
+  task_b_ctx.cr3 = GetCR3();
+  task_b_ctx.rflags = 0x202;
+  task_b_ctx.cs = kKernelCS;
+  task_b_ctx.ss = kKernelSS;
+  task_b_ctx.rsp = (task_b_stack_end & ~0xflu) - 8;
+
+  // MXCSR のすべての例外をマスクする
+  *reinterpret_cast<uint32_t*>(&task_b_ctx.fxsave_area[24]) = 0x1f80;
 
   char str[128];
 
