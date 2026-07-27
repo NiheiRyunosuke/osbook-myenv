@@ -77,22 +77,6 @@ void InitializeTextWindow() {
   layer_manager->UpDown(text_window_layer_id, std::numeric_limits<int>::max());
 }
 
-std::shared_ptr<Window> task_b_window;
-unsigned int task_b_window_layer_id;
-void InitializeTaskBWindow() {
-  task_b_window = std::make_shared<Window>(
-    160, 52, screen_config.pixel_format);
-  DrawWindow(*task_b_window->Writer(), "TaskB Window");
-
-  task_b_window_layer_id = layer_manager->NewLayer()
-    .SetWindow(task_b_window)
-    .SetDraggable(true)
-    .Move({100, 100})
-    .ID():
-
-  layer_manager->UpDown(task_b_window_layer_id, std::numeric_limits<int>::max());
-}
-
 int text_window_index;
 
 void DrawTextCursor(bool visible) {
@@ -122,6 +106,22 @@ void InputTextWindow(char c) {
   }
 
   layer_manager->Draw(text_window_layer_id);
+}
+
+std::shared_ptr<Window> task_b_window;
+unsigned int task_b_window_layer_id;
+void InitializeTaskBWindow() {
+  task_b_window = std::make_shared<Window>(
+    160, 52, screen_config.pixel_format);
+  DrawWindow(*task_b_window->Writer(), "TaskB Window");
+
+  task_b_window_layer_id = layer_manager->NewLayer()
+    .SetWindow(task_b_window)
+    .SetDraggable(true)
+    .Move({100, 100})
+    .ID();
+
+  layer_manager->UpDown(task_b_window_layer_id, std::numeric_limits<int>::max());
 }
 
 std::deque<Message>* main_queue;
