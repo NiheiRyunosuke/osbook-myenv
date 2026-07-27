@@ -2,27 +2,28 @@
 #include <cstddef>
 #include <cstdio>
 
-#include <numeric>
-#include <vector>
+#include <array>
 #include <deque>
 #include <limits>
+#include <numeric>
+#include <vector>
 
 #include "frame_buffer_config.hpp"
+#include "memory_map.hpp"
 #include "graphics.hpp"
 #include "mouse.hpp"
 #include "font.hpp"
-#include "interrupt.hpp"
 #include "console.hpp"
 #include "pci.hpp"
 #include "logger.hpp"
 #include "usb/xhci/xhci.hpp"
+#include "interrupt.hpp"
 #include "asmfunc.h"
-#include "memory_map.hpp"
 #include "segment.hpp"
-#include "window.hpp"
-#include "layer.hpp"
 #include "paging.hpp"
 #include "memory_manager.hpp"
+#include "window.hpp"
+#include "layer.hpp"
 #include "message.hpp"
 #include "timer.hpp"
 #include "acpi.hpp"
@@ -123,6 +124,16 @@ void InitializeTaskBWindow() {
 
   layer_manager->UpDown(task_b_window_layer_id, std::numeric_limits<int>::max());
 }
+
+struct TaskContext {
+  uint64_t cr3, rip, rflags, reserved1; // offset 0x00
+  uint64_t cs, ss, fs, gs; // offset 0x20
+  uint64_t rax, rbx, rcx, rdx, rdi, rsi, rsp, rbp; // offset 0x40
+  uint64_t r8, r9, r10, r11, r12, r13, r14, r15; // offset 0x80
+  std::array<uint8_t, 512> fxsave_area; // offset 0xc0
+} __attribute__((packed));
+
+alignas(16) TaskContext task_b_ctx, task_a_ctx;
 
 std::deque<Message>* main_queue;
 
