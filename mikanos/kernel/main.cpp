@@ -207,7 +207,8 @@ extern "C" void KernelMainNewStack(
 
     __asm__("cli");
     if (main_queue->size() == 0) {
-      __asm__("sti\n\thlt");
+      __asm__("sti");
+      SwitchContext(&task_b_ctx, &task_a_ctx);
       continue;
     }
 
