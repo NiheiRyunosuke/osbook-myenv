@@ -135,6 +135,21 @@ struct TaskContext {
 
 alignas(16) TaskContext task_b_ctx, task_a_ctx;
 
+void TaskB(int task_id, int data) {
+  printk("TaskB: task_id=%d, data=%d\n", task_id, data);
+  char str[128];
+  int count = 0;
+  while (true) {
+    ++count;
+    sprintf(str, "%010d", count);
+    FillRectangle(*task_b_window->Writer(), {24, 28}, {8 * 10, 16}, {0xc6, 0xc6, 0xc6});
+    WriteString(*task_b_window->Writer(), {24, 28}, str, {0, 0, 0});
+    layer_manager->Draw(task_b_window_layer_id);
+
+    SwitchContext(&task_a_ctx, &task_b_ctx);
+  }
+}
+
 std::deque<Message>* main_queue;
 
 alignas(16) uint8_t kernel_main_stack[1024 * 1024];
