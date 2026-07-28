@@ -53,14 +53,23 @@ void TimerManager::AddTimer(const Timer& timer) {
   timers_.push(timer);
 }
 
-void TimerManager::Tick() {
+bool TimerManager::Tick() {
   ++tick_;
+
+  bool task_timer_timeout = false;
   while (true) {
     const auto& t = timers_.top();
     if (t.Timeout() > tick_) {
       break;
     }
-    
+
+    if (t.Value() == kTaskTimerValue) {
+      task_timer_timeout = t.Timeout();
+      timers_.pop();
+      timers_.push(Timer{tick_ + kTaskTimerPeriod, kTaskTimerValue});
+      continue;
+    }
+
     Message m{Message::kTimerTimeout};
     m.arg.timer.timeout = t.Timeout();
     m.arg.timer.value = t.Value();
@@ -68,9 +77,12 @@ void TimerManager::Tick() {
 
     timers_.pop();
   }
+
+  return task_timer_timeout;
 }
 
 TimerManager* timer_manager;
+unsigned long lapic_timer_freq;
 
 void LAPICTimerOnInterrupt() {
   timer_manager->Tick();
