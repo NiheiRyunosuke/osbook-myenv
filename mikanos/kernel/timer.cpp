@@ -1,6 +1,7 @@
 #include "timer.hpp"
 #include "interrupt.hpp"
 #include "acpi.hpp"
+#include "task.hpp"
 
 namespace {
   const uint32_t kCountMax = 0xffffffffu;
