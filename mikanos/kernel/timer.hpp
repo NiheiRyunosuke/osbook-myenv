@@ -30,7 +30,7 @@ class TimerManager {
   public:
     TimerManager(std::deque<Message>& msg_queue);
     void AddTimer(const Timer& timer);
-    void Tick();
+    bool Tick();
     unsigned long CurrentTick() const { return tick_; }
 
   private:
