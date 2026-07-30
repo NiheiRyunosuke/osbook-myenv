@@ -27,3 +27,6 @@ void InitializeTask() {
     Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
   __asm__("sti");
 }
+
+Task::Task(uint64_t id) : id_{id} {
+}
