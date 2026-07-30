@@ -51,3 +51,7 @@ Task& Task::InitContext(TaskFunc* f, int64_t data) {
 
   return *this;
 }
+
+TaskContext& Task::Context() {
+  return context_;
+}
