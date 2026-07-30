@@ -2,31 +2,7 @@
 
 #include "asmfunc.h"
 #include "timer.hpp"
-
-alignas(16) TaskContext task_b_ctx, task_a_ctx;
-
-namespace {
-  TaskContext* current_task;
-}
-
-void SwitchTask() {
-  TaskContext* old_current_task = current_task;
-  if (current_task == &task_a_ctx) {
-    current_task = &task_b_ctx;
-  } else {
-    current_task = &task_a_ctx;
-  }
-  SwitchContext(current_task, old_current_task);
-}
-
-void InitializeTask() {
-  task_manager = new TaskManager;
-
-  __asm__("cli");
-  timer_manager->AddTimer(
-    Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
-  __asm__("sti");
-}
+#include "segment.hpp"
 
 Task::Task(uint64_t id) : id_{id} {
 }
@@ -56,13 +32,13 @@ TaskContext& Task::Context() {
   return context_;
 }
 
-Task& TaskManager::NewTask() {
-  ++latest_id_;
-  return *task_.emplace_back(new Task{latest_id_});
-}
-
 TaskManager::TaskManager() {
   NewTask();
+}
+
+Task& TaskManager::NewTask() {
+  ++latest_id_;
+  return *tasks_.emplace_back(new Task{latest_id_});
 }
 
 void TaskManager::SwitchTask() {
@@ -76,4 +52,15 @@ void TaskManager::SwitchTask() {
   current_task_index_ = next_task_index;
 
   SwitchContext(&next_task.Context(), &current_task.Context());
+}
+
+TaskManager* task_manager;
+
+void InitializeTask() {
+  task_manager = new TaskManager;
+
+  __asm__("cli");
+  timer_manager->AddTimer(
+    Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
+  __asm__("sti");
 }
