@@ -55,3 +55,8 @@ Task& Task::InitContext(TaskFunc* f, int64_t data) {
 TaskContext& Task::Context() {
   return context_;
 }
+
+TaskManager::TaskManager() {
+  NewTask();
+}
+
