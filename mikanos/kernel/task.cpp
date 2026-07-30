@@ -20,7 +20,7 @@ void SwitchTask() {
 }
 
 void InitializeTask() {
-  current_task = &task_a_ctx;
+  task_manager = new TaskManager;
 
   __asm__("cli");
   timer_manager->AddTimer(
@@ -65,3 +65,15 @@ TaskManager::TaskManager() {
   NewTask();
 }
 
+void TaskManager::SwitchTask() {
+  size_t next_task_index = current_task_index_ + 1;
+  if (next_task_index >= tasks_.size()) {
+    next_task_index = 0;
+  }
+
+  Task& current_task = *tasks_[current_task_index_];
+  Task& next_task = *tasks_[next_task_index];
+  current_task_index_ = next_task_index;
+
+  SwitchContext(&next_task.Context(), &current_task.Context());
+}
