@@ -56,6 +56,11 @@ TaskContext& Task::Context() {
   return context_;
 }
 
+Task& TaskManager::NewTask() {
+  ++latest_id_;
+  return *task_.emplace_back(new Task{latest_id_});
+}
+
 TaskManager::TaskManager() {
   NewTask();
 }
