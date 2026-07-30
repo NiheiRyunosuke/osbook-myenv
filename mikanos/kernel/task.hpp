@@ -1,7 +1,9 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
+#include <vector>
 
 struct TaskContext {
   uint64_t cr3, rip, rflags, reserved1; // offset 0x00
@@ -30,3 +32,17 @@ class Task {
     std::vector<uint64_t> stack_;
     alignas(16) TaskContext context_;
 };
+
+class TaskManager {
+  public:
+    TaskManager();
+    Task& NewTask();
+    void SwitchTask();
+
+  private:
+    std::vector<std::unique_ptr<Task>> task_{};
+    uint64_t latest_id_{0};
+    size_t current_task_id_{0};
+};
+
+extern TaskManager* task_manager;
