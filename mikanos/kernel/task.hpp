@@ -42,7 +42,7 @@ class TaskManager {
   private:
     std::vector<std::unique_ptr<Task>> tasks_{};
     uint64_t latest_id_{0};
-    size_t current_task_id_{0};
+    size_t current_task_index_{0};
 };
 
 extern TaskManager* task_manager;
