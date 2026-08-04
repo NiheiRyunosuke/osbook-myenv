@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "error.hpp"
+
 struct TaskContext {
   uint64_t cr3, rip, rflags, reserved1; // offset 0x00
   uint64_t cs, ss, fs, gs; // offset 0x20
@@ -37,12 +39,17 @@ class TaskManager {
   public:
     TaskManager();
     Task& NewTask();
-    void SwitchTask();
+    void SwitchTask(bool current_sleep = false);
+
+    void Sleep(Task* task);
+    Error Sleep(uint64_t id);
+    void Wakeup(Task* task);
+    Error Wakeup(uint64_t id);
 
   private:
     std::vector<std::unique_ptr<Task>> tasks_{};
     uint64_t latest_id_{0};
-    size_t current_task_index_{0};
+    std::deque<Task*> running_{};
 };
 
 extern TaskManager* task_manager;
