@@ -77,3 +77,11 @@ void TaskManager::Sleep(Task* task) {
 
   running_.erase(it);
 }
+
+void TaskManager::Wakeup(Task* task) {
+  auto it = std::find(running_.begin(), running_.end(), task);
+  if (it == running_.end()) {
+    running_.push_back(task);
+  }
+}
+
