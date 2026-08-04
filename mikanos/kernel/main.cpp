@@ -143,8 +143,6 @@ void TaskIdle(uint64_t task_id, int64_t data) {
   while (true) __asm__("hlt");
 }
 
-std::deque<Message>* main_queue;
-
 alignas(16) uint8_t kernel_main_stack[1024 * 1024];
 
 extern "C" void KernelMainNewStack(

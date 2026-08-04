@@ -33,6 +33,7 @@ class Task {
     uint64_t id_;
     std::vector<uint64_t> stack_;
     alignas(16) TaskContext context_;
+    std::deque<Message> msgs_;
 };
 
 class TaskManager {
