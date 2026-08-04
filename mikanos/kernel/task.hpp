@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <vector>
 
 #include "error.hpp"
@@ -15,12 +16,7 @@ struct TaskContext {
   std::array<uint8_t, 512> fxsave_area; // offset 0xc0
 } __attribute__((packed));
 
-extern TaskContext task_b_ctx, task_a_ctx;
-
-void SwitchTask();
-void InitializeTask();
-
-using TaskFunc = void(uint64_t, int64_t);
+using TaskFunc = void (uint64_t, int64_t);
 
 class Task {
   public:
@@ -53,3 +49,5 @@ class TaskManager {
 };
 
 extern TaskManager* task_manager;
+
+void InitializeTask();
