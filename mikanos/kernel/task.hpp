@@ -18,13 +18,13 @@ extern TaskContext task_b_ctx, task_a_ctx;
 void SwitchTask();
 void InitializeTask();
 
-using TaskFunc = void (uint64_t, int64_t);
+using TaskFunc = void(uint64_t, int64_t);
 
 class Task {
   public:
     static const size_t kDefaultStackBytes = 4096;
     Task(uint64_t id);
-    Task& initContext(TaskFunc* f, int64_t data);
+    Task& InitContext(TaskFunc* f, int64_t data);
     TaskContext& Context();
   
   private:
