@@ -62,3 +62,18 @@ void InitializeTask() {
     Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
   __asm__("sti");
 }
+
+void TaskManager::Sleep(Task* task) {
+  auto it = std::find(running_.begin(), running_.end(), task);
+
+  if (it == running_.begin()) {
+    SwitchTask(true);
+    return;
+  }
+
+  if (it == running_.end()) {
+    return;
+  }
+
+  running_.erase(it);
+}
