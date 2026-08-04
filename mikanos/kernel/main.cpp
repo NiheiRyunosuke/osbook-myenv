@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <cstdio>
 
-#include <array>
 #include <deque>
 #include <limits>
 #include <numeric>
@@ -126,7 +125,7 @@ void InitializeTaskBWindow() {
   layer_manager->UpDown(task_b_window_layer_id, std::numeric_limits<int>::max());
 }
 
-void TaskB(int task_id, int data) {
+void TaskB(uint64_t task_id, uint64_t data) {
   printk("TaskB: task_id=%d, data=%d\n", task_id, data);
   char str[128];
   int count = 0;
@@ -137,6 +136,11 @@ void TaskB(int task_id, int data) {
     WriteString(*task_b_window->Writer(), {24, 28}, str, {0, 0, 0});
     layer_manager->Draw(task_b_window_layer_id);
   }
+}
+
+void TaskIdle(uint64_t task_id, int64_t data) {
+  printk("TaskIdle: task_id=%lu, data=%lx\n", task_id, data);
+  while (true) __asm__("hlt");
 }
 
 std::deque<Message>* main_queue;
@@ -186,7 +190,7 @@ extern "C" void KernelMainNewStack(
   InitializeTask();
   task_manager->NewTask().InitContext(TaskB, 45);
   task_manager->NewTask().InitContext(TaskIdle, 0xdeadbeef);
-  task_manager->NewTask().InitContext(TaskIdle, 0xcafebebe);
+  task_manager->NewTask().InitContext(TaskIdle, 0xcafebabe);
 
   char str[128];
 
