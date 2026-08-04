@@ -41,17 +41,15 @@ Task& TaskManager::NewTask() {
   return *tasks_.emplace_back(new Task{latest_id_});
 }
 
-void TaskManager::SwitchTask() {
-  size_t next_task_index = current_task_index_ + 1;
-  if (next_task_index >= tasks_.size()) {
-    next_task_index = 0;
+void TaskManager::SwitchTask(bool current_sleep) {
+  Task* current_task = running_.front();
+  running_.pop_front();
+  if (!current_sleep) {
+    running_.push_back(current_task);
   }
+  Task* next_task = running_.front();
 
-  Task& current_task = *tasks_[current_task_index_];
-  Task& next_task = *tasks_[next_task_index];
-  current_task_index_ = next_task_index;
-
-  SwitchContext(&next_task.Context(), &current_task.Context());
+  SwitchContext(&next_task->Context(), &current_task->Context());
 }
 
 TaskManager* task_manager;
