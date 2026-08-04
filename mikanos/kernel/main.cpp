@@ -126,7 +126,7 @@ void InitializeTaskBWindow() {
 }
 
 void TaskB(uint64_t task_id, int64_t data) {
-  printk("TaskB: task_id=%d, data=%d\n", task_id, data);
+  printk("TaskB: task_id=%lu, data=%lu\n", task_id, data);
   char str[128];
   int count = 0;
   while (true) {
@@ -188,9 +188,12 @@ extern "C" void KernelMainNewStack(
   bool textbox_cursor_visible = false;
 
   InitializeTask();
-  task_manager->NewTask().InitContext(TaskB, 45);
-  task_manager->NewTask().InitContext(TaskIdle, 0xdeadbeef);
-  task_manager->NewTask().InitContext(TaskIdle, 0xcafebabe);
+  const uint64_t taskb_id = task_manager->NewTask()
+    .InitContext(TaskB, 45)
+    .Wakeup()
+    .ID();
+  task_manager->NewTask().InitContext(TaskIdle, 0xdeadbeef).Wakeup();
+  task_manager->NewTask().InitContext(TaskIdle, 0xcafebabe).Wakeup();
 
   char str[128];
 
