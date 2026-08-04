@@ -21,9 +21,13 @@ using TaskFunc = void (uint64_t, int64_t);
 class Task {
   public:
     static const size_t kDefaultStackBytes = 4096;
+    
     Task(uint64_t id);
     Task& InitContext(TaskFunc* f, int64_t data);
     TaskContext& Context();
+    uint64_t ID() const;
+    Task& Sleep();
+    Task& Wakeup();
   
   private:
     uint64_t id_;
