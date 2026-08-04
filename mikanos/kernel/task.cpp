@@ -33,7 +33,7 @@ TaskContext& Task::Context() {
 }
 
 TaskManager::TaskManager() {
-  NewTask();
+  running_.push_back(&NewTask());
 }
 
 Task& TaskManager::NewTask() {
@@ -84,4 +84,3 @@ void TaskManager::Wakeup(Task* task) {
     running_.push_back(task);
   }
 }
-
