@@ -84,3 +84,14 @@ void TaskManager::Wakeup(Task* task) {
     running_.push_back(task);
   }
 }
+
+Error TaskManager::Sleep(uint64_t id) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                        [id](const auto& t){ return t->ID() == id });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  Sleep(it->get());
+  return MAKE_ERROR(Error::kSuccess);
+}
