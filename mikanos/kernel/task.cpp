@@ -81,6 +81,10 @@ void TaskManager::SwitchTask(bool current_sleep) {
   SwitchContext(&next_task->Context(), &current_task->Context());
 }
 
+Task& TaskManager::CurrentTask() {
+  return *running_.front();
+}
+
 TaskManager* task_manager;
 
 void InitializeTask() {
