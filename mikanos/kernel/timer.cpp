@@ -65,7 +65,7 @@ bool TimerManager::Tick() {
     }
 
     if (t.Value() == kTaskTimerValue) {
-      task_timer_timeout = t.Timeout();
+      task_timer_timeout = true;
       timers_.pop();
       timers_.push(Timer{tick_ + kTaskTimerPeriod, kTaskTimerValue});
       continue;
@@ -74,7 +74,7 @@ bool TimerManager::Tick() {
     Message m{Message::kTimerTimeout};
     m.arg.timer.timeout = t.Timeout();
     m.arg.timer.value = t.Value();
-    msg_queue_.push_back(m);
+    task_manager->SendMessage(1, m);
 
     timers_.pop();
   }
