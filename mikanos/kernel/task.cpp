@@ -51,6 +51,16 @@ void Task::SendMessage(const Message& msg) {
   Wakeup();
 }
 
+std::optional<Message> Task::ReceiveMessage() {
+  if (msgs_.empty()) {
+    return std::nullopt;
+  }
+
+  auto m = msgs_.front();
+  msgs_.pop_front();
+  return m;
+}
+
 TaskManager::TaskManager() {
   running_.push_back(&NewTask());
 }
