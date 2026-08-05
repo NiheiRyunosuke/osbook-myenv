@@ -139,3 +139,14 @@ Error TaskManager::Wakeup(uint64_t id) {
   Wakeup(it->get());
   return MAKE_ERROR(Error::kSuccess);
 }
+
+Error TaskManager::SendMessage(uint64_t id, const Message& msg) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                        [id](const auto& t){ return t->ID() == id; });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  (*it)->SendMessage(msg);
+  return MAKE_ERROR(Error::kSuccess);
+}
