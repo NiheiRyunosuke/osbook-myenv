@@ -160,23 +160,18 @@ extern "C" void KernelMainNewStack(
   InitializeSegmentation();
   InitializePaging();
   InitializeMemoryManager(memory_map);
-  ::main_queue = new std::deque<Message>(32);
-  InitializeInterrupt(main_queue);
+  InitializeInterrupt();
 
   InitializePCI();
-  usb::xhci::Initialize();
 
   InitializeLayer();
   InitializeMainWindow();
   InitializeTextWindow();
   InitializeTaskBWindow();
-  InitializeMouse();
   layer_manager->Draw({{0, 0}, ScreenSize()});
 
   acpi::Initialize(acpi_table);
-  InitializeLAPICTimer(*main_queue);
-
-  InitializeKeyboard(*main_queue);
+  InitializeLAPICTimer();
 
   const int kTextboxCursorTimer = 1;
   const int kTimer05Sec = static_cast<int>(kTimerFreq * 0.5);
@@ -194,6 +189,10 @@ extern "C" void KernelMainNewStack(
     .ID();
   task_manager->NewTask().InitContext(TaskIdle, 0xdeadbeef).Wakeup();
   task_manager->NewTask().InitContext(TaskIdle, 0xcafebabe).Wakeup();
+
+  usb::xhci::Initialize();
+  InitializeKeyboard();
+  InitializeMouse();
 
   char str[128];
 
