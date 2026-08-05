@@ -222,10 +222,10 @@ extern "C" void KernelMainNewStack(
       usb::xhci::ProcessEvents();
       break;
     case Message::kTimerTimeout:
-      if (msg.arg.timer.value == kTextboxCursorTimer) {
+      if (msg->arg.timer.value == kTextboxCursorTimer) {
         __asm__("cli");
         timer_manager->AddTimer(
-          Timer{msg.arg.timer.timeout + kTimer05Sec, kTextboxCursorTimer});
+          Timer{msg->arg.timer.timeout + kTimer05Sec, kTextboxCursorTimer});
         __asm__("sti");
         textbox_cursor_visible = !textbox_cursor_visible;
         DrawTextCursor(textbox_cursor_visible);
@@ -233,15 +233,15 @@ extern "C" void KernelMainNewStack(
       }
       break;
     case Message::kKeyPush:
-      InputTextWindow(msg.arg.keyboard.ascii);
-      if (msg.arg.keyboard.ascii == 's') {
+      InputTextWindow(msg->arg.keyboard.ascii);
+      if (msg->arg.keyboard.ascii == 's') {
         printk("sleep TaskB：%s\n", task_manager->Sleep(taskb_id).Name());
-      } else if (msg.arg.keyboard.ascii == 'w') {
+      } else if (msg->arg.keyboard.ascii == 'w') {
         printk("wakeup TaskB: %s\n", task_manager->Wakeup(taskb_id).Name());
       }
       break;
     default:
-      Log(kError, "Unknown message type: %d\n", msg.type);
+      Log(kError, "Unknown message type: %d\n", msg->type);
     }
   }
 }
