@@ -43,6 +43,9 @@ class Task {
 
 class TaskManager {
   public:
+    // level: 0 = lowest, kMaxLevel = highest
+    static const int kMaxLevel = 3;
+
     TaskManager();
     Task& NewTask();
     void SwitchTask(bool current_sleep = false);
@@ -57,7 +60,9 @@ class TaskManager {
   private:
     std::vector<std::unique_ptr<Task>> tasks_{};
     uint64_t latest_id_{0};
-    std::deque<Task*> running_{};
+    std::array<std::deque<Task*>, kMaxLevel + 1> running_{};
+    int current_level_{kMaxLevel};
+    bool ChangeLevelRunning(Task* task, int level);
 };
 
 extern TaskManager* task_manager;
