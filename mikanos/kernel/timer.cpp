@@ -12,7 +12,7 @@ namespace {
 }
 
 void InitializeLAPICTimer() {
-  timer_manager = new TimerManager{msg_queue};
+  timer_manager = new TimerManager{};
 
   divide_config = 0b1011; // divide 1:1
   lvt_timer = 0b001 << 16; // masked, one-shot
@@ -45,9 +45,9 @@ Timer::Timer(unsigned long timeout, int value)
     : timeout_{timeout}, value_{value} {
 }
 
-TimerManager::TimerManager()
-    : msg_queue_{msg_queue} {
-  timers_.push(Timer{std::numeric_limits<unsigned long>::max() ,1});
+TimerManager::TimerManager() {
+  timers_.push(
+    Timer{std::numeric_limits<unsigned long>::max() ,1});
 }
 
 void TimerManager::AddTimer(const Timer& timer) {
