@@ -32,6 +32,25 @@ TaskContext& Task::Context() {
   return context_;
 }
 
+uint64_t Task::ID() const {
+  return id_;
+}
+
+Task& Task::Sleep() {
+  task_manager->Sleep(this);
+  return *this;
+}
+
+Task& Task::Wakeup() {
+  task_manager->Wakeup(this);
+  return *this;
+}
+
+void Task::SendMessage(const Message& msg) {
+  msgs_.push_back(msg);
+  Wakeup();
+}
+
 TaskManager::TaskManager() {
   running_.push_back(&NewTask());
 }
@@ -87,11 +106,22 @@ void TaskManager::Wakeup(Task* task) {
 
 Error TaskManager::Sleep(uint64_t id) {
   auto it = std::find_if(tasks_.begin(), tasks_.end(),
-                        [id](const auto& t){ return t->ID() == id });
+                        [id](const auto& t){ return t->ID() == id; });
   if (it == tasks_.end()) {
     return MAKE_ERROR(Error::kNoSuchTask);
   }
 
   Sleep(it->get());
+  return MAKE_ERROR(Error::kSuccess);
+}
+
+Error TaskManager::Wakeup(uint64_t id) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                        [id](const auto& t){ return t->ID() == id; });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  Wakeup(it->get());
   return MAKE_ERROR(Error::kSuccess);
 }
