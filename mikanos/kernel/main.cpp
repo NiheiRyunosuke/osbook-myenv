@@ -206,16 +206,16 @@ extern "C" void KernelMainNewStack(
     layer_manager->Draw(main_window_layer_id);
 
     __asm__("cli");
-    if (main_queue->size() == 0) {
-      __asm__("sti\n\thlt");
+    auto msg = main_task.ReceiveMessage();
+    if (!msg) {
+      main_task.Sleep();
+      __asm__("sti");
       continue;
     }
 
-    Message msg = main_queue->front();
-    main_queue->pop_front();
     __asm__("sti");
 
-    switch (msg.type) {
+    switch (msg->type) {
     case Message::kInterruptXHCI:
       usb::xhci::ProcessEvents();
       break;
