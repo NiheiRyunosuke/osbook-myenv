@@ -186,6 +186,8 @@ extern "C" void KernelMainNewStack(
   bool textbox_cursor_visible = false;
 
   InitializeTask();
+  Task& main_task = task_manager->CurrentTask();
+
   const uint64_t taskb_id = task_manager->NewTask()
     .InitContext(TaskB, 45)
     .Wakeup()
