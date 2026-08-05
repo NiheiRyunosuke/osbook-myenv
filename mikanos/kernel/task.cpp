@@ -62,7 +62,10 @@ std::optional<Message> Task::ReceiveMessage() {
 }
 
 TaskManager::TaskManager() {
-  running_.push_back(&NewTask());
+  Task& task = NewTask()
+    .SetLevel(current_level_)
+    .SetRunning(true);
+  running_[current_level_].push_back(&task);
 }
 
 Task& TaskManager::NewTask() {
