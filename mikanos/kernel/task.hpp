@@ -6,6 +6,7 @@
 #include <deque>
 #include <optional>
 #include <vector>
+#include <memory>
 
 #include "error.hpp"
 #include "message.hpp"
@@ -30,6 +31,8 @@ class Task {
     uint64_t ID() const;
     Task& Sleep();
     Task& Wakeup();
+    void SendMessage(const Message& msg);
+    std::optional<Message> ReceiveMessage();
   
   private:
     uint64_t id_;
