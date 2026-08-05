@@ -48,6 +48,8 @@ class TaskManager {
     Error Sleep(uint64_t id);
     void Wakeup(Task* task);
     Error Wakeup(uint64_t id);
+    Error SendMessage(uint64_t id, const Message& msg);
+    Task& CurrentTask();
 
   private:
     std::vector<std::unique_ptr<Task>> tasks_{};
