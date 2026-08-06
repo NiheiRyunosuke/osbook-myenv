@@ -122,11 +122,24 @@ void InitializeTask() {
   __asm__("sti");
 }
 
-void TaskManager::Wakeup(Task* task) {
-  auto it = std::find(running_.begin(), running_.end(), task);
-  if (it == running_.end()) {
-    running_.push_back(task);
+void TaskManager::Wakeup(Task* task, int level) {
+  if (task->Running()) {
+    ChangeLevelRunning(task, level);
+    return;
   }
+
+  if (level < 0) {
+    level = task->Level();
+  }
+
+  task->SetLevel(level);
+  task->SetRunning(true);
+
+  running_[level].push_back(task);
+  if (level > current_level_) {
+    level_changed_ = true;
+  }
+  return;
 }
 
 void TaskManager::Sleep(Task* task) {
