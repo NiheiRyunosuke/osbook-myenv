@@ -4,6 +4,14 @@
 #include "timer.hpp"
 #include "segment.hpp"
 
+namespace {
+  template <class T, class U>
+  void Erase(T& c, const U& value) {
+    auto it = std::remove(c.begin(), c.end(), value);
+    c.erase(it, c.end());
+  }
+} // namespace
+
 Task::Task(uint64_t id) : id_{id} {
 }
 
@@ -99,26 +107,26 @@ void InitializeTask() {
   __asm__("sti");
 }
 
-void TaskManager::Sleep(Task* task) {
-  auto it = std::find(running_.begin(), running_.end(), task);
-
-  if (it == running_.begin()) {
-    SwitchTask(true);
-    return;
-  }
-
-  if (it == running_.end()) {
-    return;
-  }
-
-  running_.erase(it);
-}
-
 void TaskManager::Wakeup(Task* task) {
   auto it = std::find(running_.begin(), running_.end(), task);
   if (it == running_.end()) {
     running_.push_back(task);
   }
+}
+
+void TaskManager::Sleep(Task* task) {
+  if (!task->Running()) {
+    return;
+  }
+
+  task->SetRunning(false);
+
+  if (task == running_[current_level_].front()) {
+    SwitchTask(true);
+    return;
+  }
+
+  Erase(running_[task->Level()], task);
 }
 
 Error TaskManager::Sleep(uint64_t id) {
