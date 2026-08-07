@@ -21,6 +21,31 @@ struct TaskContext {
 
 using TaskFunc = void (uint64_t, int64_t);
 
+class TaskManager {
+  public:
+    // level: 0 = lowest, kMaxLevel = highest
+    static const int kMaxLevel = 3;
+
+    TaskManager();
+    Task& NewTask();
+    void SwitchTask(bool current_sleep = false);
+
+    void Sleep(Task* task);
+    Error Sleep(uint64_t id);
+    void Wakeup(Task* task, int level = -1);
+    Error Wakeup(uint64_t id, int level = -1);
+    Error SendMessage(uint64_t id, const Message& msg);
+    Task& CurrentTask();
+
+  private:
+    std::vector<std::unique_ptr<Task>> tasks_{};
+    uint64_t latest_id_{0};
+    std::array<std::deque<Task*>, kMaxLevel + 1> running_{};
+    int current_level_{kMaxLevel};
+    bool level_changed_{false};
+    void ChangeLevelRunning(Task* task, int level);
+};
+
 class Task {
   public:
     static const int kDefaultLevel = 1;
@@ -34,6 +59,8 @@ class Task {
     Task& Wakeup();
     void SendMessage(const Message& msg);
     std::optional<Message> ReceiveMessage();
+    int Level() const { return level_; }
+    bool Running() const { return running_; }
   
   private:
     uint64_t id_;
@@ -46,31 +73,7 @@ class Task {
     Task& SetLevel(int level) { level_ = level; return *this; }
     Task& SetRunning(bool running) { running_ = running; return *this; }
 
-    friend class TaskManager;
-};
-
-class TaskManager {
-  public:
-    // level: 0 = lowest, kMaxLevel = highest
-    static const int kMaxLevel = 3;
-
-    TaskManager();
-    Task& NewTask();
-    void SwitchTask(bool current_sleep = false);
-
-    void Sleep(Task* task);
-    Error Sleep(uint64_t id);
-    void Wakeup(Task* task);
-    Error Wakeup(uint64_t id);
-    Error SendMessage(uint64_t id, const Message& msg);
-    Task& CurrentTask();
-
-  private:
-    std::vector<std::unique_ptr<Task>> tasks_{};
-    uint64_t latest_id_{0};
-    std::array<std::deque<Task*>, kMaxLevel + 1> running_{};
-    int current_level_{kMaxLevel};
-    bool ChangeLevelRunning(Task* task, int level);
+    friend TaskManager;
 };
 
 extern TaskManager* task_manager;
