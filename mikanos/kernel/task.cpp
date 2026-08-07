@@ -108,7 +108,7 @@ void TaskManager::SwitchTask(bool current_sleep) {
 }
 
 Task& TaskManager::CurrentTask() {
-  return *running_.front();
+  return *running_[current_level_].front();
 }
 
 void TaskManager::ChangeLevelRunning(Task* task, int level) {
@@ -196,14 +196,14 @@ Error TaskManager::Sleep(uint64_t id) {
   return MAKE_ERROR(Error::kSuccess);
 }
 
-Error TaskManager::Wakeup(uint64_t id) {
+Error TaskManager::Wakeup(uint64_t id, int level) {
   auto it = std::find_if(tasks_.begin(), tasks_.end(),
                         [id](const auto& t){ return t->ID() == id; });
   if (it == tasks_.end()) {
     return MAKE_ERROR(Error::kNoSuchTask);
   }
 
-  Wakeup(it->get());
+  Wakeup(it->get(), level);
   return MAKE_ERROR(Error::kSuccess);
 }
 
