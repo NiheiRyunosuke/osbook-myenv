@@ -46,7 +46,7 @@ class Task {
     Task& SetLevel(int level) { level_ = level; return *this; }
     Task& SetRunning(bool running) { running_ = running; return *this; }
 
-    friend TaskManager;
+    friend class TaskManager;
 };
 
 class TaskManager {
