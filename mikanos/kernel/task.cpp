@@ -111,6 +111,34 @@ Task& TaskManager::CurrentTask() {
   return *running_.front();
 }
 
+void TaskManager::ChangeLevelRunning(Task* task, int level) {
+  if (level < 0 || level == task->Level()) {
+    return;
+  }
+
+  if (task != running_[current_level_].front()) {
+    // change level of other task
+    Erase(running_[task->Level()], task);
+    running_[level].push_back(task);
+    task->SetLevel(level);
+    if (level > current_level_) {
+      level_changed_ = true;
+    }
+    return;
+  }
+
+  // change level myself
+  running_[current_level_].pop_front();
+  running_[level].push_front(task);
+  task->SetLevel(level);
+  if (level >= current_level_) {
+    current_level_ = level;
+  } else {
+    current_level_ = level;
+    level_changed_ = true;
+  }
+}
+
 TaskManager* task_manager;
 
 void InitializeTask() {
