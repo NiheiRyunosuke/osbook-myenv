@@ -17,6 +17,10 @@ struct Message {
     int x, y;
   } layer;
 
+  enum class LayerOperation {
+    Move, MoveRelative, Draw
+  };
+
   union {
     struct {
       unsigned long timeout;
