@@ -5,7 +5,17 @@ struct Message {
     kInterruptXHCI,
     kTimerTimeout,
     kKeyPush,
+    kLayer,
+    kLayerFinish,
   } type;
+
+  uint64_t src_task;
+
+  struct {
+    LayerOperation op;
+    unsigned int layer_id;
+    int x, y;
+  } layer;
 
   union {
     struct {
