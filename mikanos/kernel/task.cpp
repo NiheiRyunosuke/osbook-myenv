@@ -10,6 +10,10 @@ namespace {
     auto it = std::remove(c.begin(), c.end(), value);
     c.erase(it, c.end());
   }
+
+  void TaskIdle(uint64_t task_id, int64_t data) {
+    while (true) __asm__("hlt");
+  }
 } // namespace
 
 Task::Task(uint64_t id) : id_{id} {
