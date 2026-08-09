@@ -229,6 +229,12 @@ extern "C" void KernelMainNewStack(
         printk("wakeup TaskB: %s\n", task_manager->Wakeup(taskb_id).Name());
       }
       break;
+    case Message::kLayer:
+      ProcessLayerMessage(*msg);
+      __asm__("cli");
+      task_manager->SendMessage(msg->src_task, Message{Message::kLayerFinish});
+      __asm__("sti");
+      break;
     default:
       Log(kError, "Unknown message type: %d\n", msg->type);
     }
