@@ -99,4 +99,4 @@ class LayerManager {
 extern LayerManager* layer_manager;
 
 void InitializeLayer();
-void ProcessLayerMessage(const Message6 msg);
+void ProcessLayerMessage(const Message& msg);
