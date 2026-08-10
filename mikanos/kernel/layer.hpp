@@ -98,5 +98,20 @@ class LayerManager {
 
 extern LayerManager* layer_manager;
 
+class ActiveLayer {
+  public:
+    ActiveLayer(LayerManager& manager);
+    void SetMouseLayer(unsigned int mouse_layer);
+    void Activate(unsigned int layer_id);
+    unsigned int GetActive() const { return active_layer_; }
+
+  private:
+    LayerManager& manager_;
+    unsigned int active_layer_{0};
+    unsigned int mouse_layer_{0};
+};
+
+extern ActiveLayer* active_layer;
+
 void InitializeLayer();
 void ProcessLayerMessage(const Message& msg);
