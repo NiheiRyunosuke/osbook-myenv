@@ -175,6 +175,13 @@ namespace {
 
 LayerManager* layer_manager;
 
+ActiveLayer::ActiveLayer(LayerManager& manager) : manager_{manager} {
+}
+
+void ActiveLayer::SetMouseLayer(unsigned int mouse_layer) {
+  mouse_layer_ = mouse_layer;
+}
+
 void InitializeLayer() {
   const auto screen_size = ScreenSize();
 
