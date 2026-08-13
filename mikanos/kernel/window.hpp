@@ -26,7 +26,7 @@ class Window {
 
     /** @brief 指定されたピクセル数の平面描画領域を作成する.  */
     Window(int width, int height, PixelFormat shadow_format);
-    ~Window() = default;
+    virtual ~Window() = default;
     Window(const Window& rhs) = delete;
     Window& operator=(const Window& rhs) = delete;
 
@@ -54,6 +54,9 @@ class Window {
     Vector2D<int> Size() const;
 
     void Move(Vector2D<int> dst_pos, const Rectangle<int>& src);
+
+    virtual void Activate() {}
+    virtual void Deactivate() {}
 
   private:
     int width_, height_;
