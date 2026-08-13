@@ -98,6 +98,26 @@ void Window::Move(Vector2D<int> dst_pos, const Rectangle<int>& src) {
   shadow_buffer_.Move(dst_pos, src);
 }
 
+ToplevelWindow::ToplevelWindow(int width, int height, PixelFormat shadow_format,
+                                const std::string& title)
+    : Window{width, height, shadow_format}, title_{title} {
+  DrawWindowTitle(*Writer(), title_.c_str());
+}
+
+void ToplevelWindow::Activate() {
+  Window::Activate();
+  DrawWindowTitle(*Writer(), title_.c_str(), true);
+}
+
+void ToplevelWindow::Deactivate() {
+  Window::Deactivate();
+  DrawWindowTitle(*Writer(), title_.c_str(), false);
+}
+
+Vector2D<int> ToplevelWindow::InnerSize() const {
+  return Size() - kTopLeftMargin - kBottomRightMargin;
+}
+
 void DrawWindow(PixelWriter& writer, const char* title) {
   auto fill_rect = [&writer](Vector2D<int> pos, Vector2D<int> size, uint32_t c) {
     FillRectangle(writer, pos, size, ToColor(c));
