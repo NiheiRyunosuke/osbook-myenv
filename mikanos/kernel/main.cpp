@@ -111,9 +111,8 @@ void InputTextWindow(char c) {
 std::shared_ptr<ToplevelWindow> task_b_window;
 unsigned int task_b_window_layer_id;
 void InitializeTaskBWindow() {
-  task_b_window = std::make_shared<Window>(
-    160, 52, screen_config.pixel_format);
-  DrawWindow(*task_b_window->Writer(), "TaskB Window");
+  task_b_window = std::make_shared<ToplevelWindow>(
+    160, 52, screen_config.pixel_format, "TaskB Window");
 
   task_b_window_layer_id = layer_manager->NewLayer()
     .SetWindow(task_b_window)
