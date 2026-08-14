@@ -202,6 +202,8 @@ void ActiveLayer::Activate(unsigned int layer_id) {
   }
 }
 
+ActiveLayer* active_layer;
+
 void InitializeLayer() {
   const auto screen_size = ScreenSize();
 
