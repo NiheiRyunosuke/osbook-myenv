@@ -236,6 +236,8 @@ void InitializeLayer() {
 
   layer_manager->UpDown(bglayer_id, 0);
   layer_manager->UpDown(console->LayerID(), 1);
+
+  active_layer = new ActiveLayer{*layer_manager};
 }
 
 void ProcessLayerMessage(const Message& msg) {
