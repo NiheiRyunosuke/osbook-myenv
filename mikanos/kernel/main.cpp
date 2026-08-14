@@ -58,16 +58,15 @@ void InitializeMainWindow() {
   layer_manager->UpDown(main_window_layer_id, std::numeric_limits<int>::max());
 }
 
-std::shared_ptr<Window> text_window;
+std::shared_ptr<ToplevelWindow> text_window;
 unsigned int text_window_layer_id;
 void InitializeTextWindow() {
   const int win_w = 160;
   const int win_h = 52;
 
-  text_window = std::make_shared<Window>(
-    win_w, win_h, screen_config.pixel_format);
-  DrawWindow(*text_window->Writer(), "Text Box Test");
-  DrawTextbox(*text_window->Writer(), {4, 24}, {win_w - 8, win_h - 24 - 4});
+  text_window = std::make_shared<ToplevelWindow>(
+    win_w, win_h, screen_config.pixel_format, "Text Box Test");
+  DrawTextbox(*text_window->InnerWriter(), {0, 0}, text_window->InnerSize());
 
   text_window_layer_id = layer_manager->NewLayer()
     .SetWindow(text_window)
@@ -109,7 +108,7 @@ void InputTextWindow(char c) {
   layer_manager->Draw(text_window_layer_id);
 }
 
-std::shared_ptr<Window> task_b_window;
+std::shared_ptr<ToplevelWindow> task_b_window;
 unsigned int task_b_window_layer_id;
 void InitializeTaskBWindow() {
   task_b_window = std::make_shared<Window>(
