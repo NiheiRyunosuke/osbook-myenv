@@ -169,6 +169,15 @@ Layer* LayerManager::FindLayer(unsigned int id) {
   return it->get();
 }
 
+int LayerManager::GetHeight(unsigned int id) {
+  for (int h = 0; h < layer_stack_.size(); ++h) {
+    if (layer_stack_[h]->ID() == id) {
+      return h;
+    }
+  }
+  return -1;
+}
+
 namespace {
   FrameBuffer* screen;
 }
