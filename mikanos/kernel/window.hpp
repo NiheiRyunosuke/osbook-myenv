@@ -98,9 +98,10 @@ class ToplevelWindow : public Window {
     Vector2D<int> InnerSize() const;
 
   private:
-    std::string title;
+    std::string title_;
     InnerAreaWriter inner_writer_{*this};
 };
 
 void DrawWindow(PixelWriter& writer, const char* title);
 void DrawTextbox(PixelWriter& writer, Vector2D<int> pos, Vector2D<int> size);
+void DrawWindowTitle(PixelWriter& writer, const char* title, bool active);
