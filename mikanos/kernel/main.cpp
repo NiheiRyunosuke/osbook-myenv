@@ -81,8 +81,8 @@ int text_window_index;
 
 void DrawTextCursor(bool visible) {
   const auto color = visible ? ToColor(0) : ToColor(0xffffff);
-  const auto pos = Vector2D<int>{8 + 8*text_window_index, 24 + 5};
-  FillRectangle(*text_window->Writer(), pos, {7, 15}, color);
+  const auto pos = Vector2D<int>{4 + 8*text_window_index, 5};
+  FillRectangle(*text_window->InnerWriter(), pos, {7, 15}, color);
 }
 
 void InputTextWindow(char c) {
