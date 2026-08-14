@@ -101,7 +101,7 @@ void Window::Move(Vector2D<int> dst_pos, const Rectangle<int>& src) {
 ToplevelWindow::ToplevelWindow(int width, int height, PixelFormat shadow_format,
                                 const std::string& title)
     : Window{width, height, shadow_format}, title_{title} {
-  DrawWindowTitle(*Writer(), title_.c_str());
+  DrawWindow(*Writer(), title_.c_str());
 }
 
 void ToplevelWindow::Activate() {
