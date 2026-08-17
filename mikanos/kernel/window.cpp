@@ -178,3 +178,13 @@ void DrawWindowTitle(PixelWriter& writer, const char* title, bool active) {
     }
   }
 }
+
+void DrawTextbox(PixelWriter& writer, Vector2D<int> pos, Vector2D<int> size) {
+  DrawTextbox(writer, pos, size,
+              ToColor(0xffffff), ToColor(0xc6c6c6), ToColor(0x848484));
+}
+
+void DrawTerminal(PixelWriter& writer, Vector2D<int> pos, Vector2D<int> size) {
+  DrawTextbox(writer, pos, size,
+            ToColor(0x000000), ToColor(0xc6c6c6), ToColor(0x848484));
+}
