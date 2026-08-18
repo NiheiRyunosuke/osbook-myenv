@@ -1,3 +1,10 @@
+#include "terminal.hpp"
+
+#include "font.hpp"
+#include "layer.hpp"
+
+#include "logger.hpp"
+
 Terminal::Terminal() {
   window_ = std::make_shared<ToplevelWindow>(
     kColumns * 8 + 8 + ToplevelWindow::kMarginX,
