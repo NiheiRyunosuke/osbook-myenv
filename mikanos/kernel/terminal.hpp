@@ -1,3 +1,11 @@
+#pragma once
+
+#include <deque>
+#include <map>
+#include "window.hpp"
+#include "task.hpp"
+#include "layer.hpp"
+
 class Terminal {
   public:
     static const int kRows = 15, kColumns = 60;
