@@ -11,7 +11,7 @@ class Terminal {
     static const int kRows = 15, kColumns = 60;
 
     Terminal();
-    unsigned int Layer ID() { return layer_id_; }
+    unsigned int LayerID() { return layer_id_; }
     void BlinkCursor();
 
   private:
@@ -23,4 +23,4 @@ class Terminal {
     void DrawCursor(bool visible);
 };
 
-void TaskTerminal(uint64_t task_id, int64_t data)
+void TaskTerminal(uint64_t task_id, int64_t data);
