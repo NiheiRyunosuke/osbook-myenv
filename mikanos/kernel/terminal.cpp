@@ -48,12 +48,10 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
 
     switch(msg->type) {
     case Message::kTimerTimeout:
-      terminal->BlinkCursor();
-
       {
-        Message msg{Message::kLayer, task_id};
-        msg.arg.layer.layer_id = terminal->LayerID();
-        msg.arg.layer.op = LayerOperation::Draw;
+        const auto area = terminal->BlinkCursor();
+        Message msg = MakeLayerMessage(
+          task_id, terminal->LayerID(), LayerOperation::DrawArea, area);
         __asm__("cli");
         task_manager->SendMessage(1, msg);
         __asm__("sti");
