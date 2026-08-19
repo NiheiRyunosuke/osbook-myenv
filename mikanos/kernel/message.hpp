@@ -31,6 +31,7 @@ struct Message {
       LayerOperation op;
       unsigned int layer_id;
       int x, y;
+      int w, h;
     } layer;
 
   } arg;
