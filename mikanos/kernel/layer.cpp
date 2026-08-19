@@ -63,6 +63,13 @@ Layer& LayerManager::NewLayer() {
   return *layers_.emplace_back(new Layer{latest_id_});
 }
 
+void LayerManager::Draw(const Rectangle<int>& area) const {
+  for (auto layer : layer_stack_) {
+    layer->DrawTo(back_buffer_, area);
+  }
+  screen_->Copy(area.pos, back_buffer_, area);
+}
+
 void LayerManager::Draw(unsigned int id) const {
   Draw(id, {{0, 0}, {-1, -1}});
 }
