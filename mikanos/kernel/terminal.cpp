@@ -19,9 +19,13 @@ Terminal::Terminal() {
     .ID();
 }
 
-void Terminal::BlinkCursor() {
+Rectangle<int> Terminal::BlinkCursor() {
   cursor_visible_ = !cursor_visible_;
   DrawCursor(cursor_visible_);
+
+  return {ToplevelWindow::kTopLeftMargin +
+            Vector2D<int>{4 + 8*cursor_.x, 5 + 16*cursor_.y},
+          {7, 15}};
 }
 
 void Terminal::DrawCursor(bool visible) {
