@@ -263,7 +263,7 @@ void ProcessLayerMessage(const Message& msg) {
     layer_manager->Draw(arg.layer_id);
     break;
   case LayerOperation::DrawArea:
-    later_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
+    layer_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
     break;
   }
 }
