@@ -63,20 +63,21 @@ Layer& LayerManager::NewLayer() {
   return *layers_.emplace_back(new Layer{latest_id_});
 }
 
-void LayerManager::Draw(const Rectangle<int>& area) const {
-  for (auto layer : layer_stack_) {
-    layer->DrawTo(back_buffer_, area);
-  }
-  screen_->Copy(area.pos, back_buffer_, area);
+void LayerManager::Draw(unsigned int id) const {
+  Draw(id, {{0, 0}, {-1, -1}});
 }
 
-void LayerManager::Draw(unsigned int id) const {
+void LayerManager::Draw(unsigned int id, Rectangle<int> area) const {
   bool draw = false;
   Rectangle<int> window_area;
   for (auto layer : layer_stack_) {
     if (layer->ID() == id) {
       window_area.size = layer->GetWindow()->Size();
       window_area.pos = layer->GetPosition();
+      if (area.size.x >= 0 || area.size.y >= 0) {
+        area.pos = area.pos + window_area.pos;
+        window_area = window_area & area;
+      }
       draw = true;
     }
     if (draw) {
