@@ -21,6 +21,11 @@ class Terminal {
     Vector2D<int> cursor_{0, 0};
     bool cursor_visible_{false};
     void DrawCursor(bool visible);
+    Vector2D<int> CalcCursorPos() const;
+
+    int linebuf_index_{0};
+    std::array<char, kLineMax> linebuf_{};
+    void Scroll1();
 };
 
 void TaskTerminal(uint64_t task_id, int64_t data);
