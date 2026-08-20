@@ -39,6 +39,47 @@ Vector2D<int> Terminal::CalcCursorPos() const {
       Vector2D<int>{4 + 8 * cursor_.x, 4 + 16 * cursor_.y};
 }
 
+Rectangle<int> Terminal::InputKey(
+    uint8_t modifier, uint8_t keycode, char ascii) {
+  DrawCursor(false);
+
+  Rectangle<int> draw_area{CalcCursorPos(), {8*2, 16}};
+
+  if (ascii == '\n') {
+    linebuf_[linebuf_index_] = 0;
+    linebuf_index_ = 0;
+    cursor_.x = 0;
+    Log(kWarn, "line: %s\n", &linebuf_[0]);
+    if (cursor_.y < kRows - 1) {
+      ++cursor_.y;
+    } else {
+      Scroll1();
+    }
+    draw_area.pos = ToplevelWindow::kTopLeftMargin;
+    draw_area.size = window_->InnerSize();
+  } else if (ascii == '\b') {
+    if (cursor_.x > 0) {
+      --cursor_.x;
+      FillRectangle(*window_->Writer(), CalcCursorPos(), {8, 16}, {0, 0, 0});
+      draw_area.pos = CalcCursorPos();
+
+      if (linebuf_index_ > 0) {
+        --linebuf_index_ ;
+      }
+    }
+  } else if (ascii != 0) {
+    if (cursor_.x < kColumns - 1 && linebuf_index_ < kLineMax - 1) {
+      linebuf_[linebuf_index_] = ascii;
+      ++linebuf_index_;
+      WriterAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
+    }
+  }
+
+  DrawCursor(true);
+
+  return draw_area;
+}
+
 void TaskTerminal(uint64_t task_id, int64_t data) {
   __asm__("cli");
   Task& task = task_manager->CurrentTask();
