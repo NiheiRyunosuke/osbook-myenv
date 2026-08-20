@@ -9,6 +9,7 @@
 class Terminal {
   public:
     static const int kRows = 15, kColumns = 60;
+    static const int kLineMax = 128;
 
     Terminal();
     unsigned int LayerID() const { return layer_id_; }
