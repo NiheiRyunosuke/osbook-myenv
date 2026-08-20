@@ -34,6 +34,11 @@ void Terminal::DrawCursor(bool visible) {
   FillRectangle(*window_->InnerWriter(), pos, {7, 15}, color);
 }
 
+Vector2D<int> Terminal::CalcCursorPos() const {
+  return ToplevelWindow::kTopLeftMargin +
+      Vector2D<int>{4 + 8 * cursor_.x, 4 + 16 * cursor_.y};
+}
+
 void TaskTerminal(uint64_t task_id, int64_t data) {
   __asm__("cli");
   Task& task = task_manager->CurrentTask();
