@@ -71,13 +71,23 @@ Rectangle<int> Terminal::InputKey(
     if (cursor_.x < kColumns - 1 && linebuf_index_ < kLineMax - 1) {
       linebuf_[linebuf_index_] = ascii;
       ++linebuf_index_;
-      WriterAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
+      WriteAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
     }
   }
 
   DrawCursor(true);
 
   return draw_area;
+}
+
+void Terminal::Scroll1() {
+  Rectangle<int> move_src{
+    ToplevelWindow::kTopLeftMargin + Vector2D<int>{4, 4 + 16},
+    {8*kColumns, 16*(kRows - 1)}
+  };
+  window_->Move(ToplevelWindow::kTopLeftMargin + Vector2D<int>{4, 4}, move_src);
+  FillRectangle(*window_->InnerWriter(),
+                {4, 4 + 16*cursor_.y}, {8*kColumns, 16}, {0, 0, 0});
 }
 
 void TaskTerminal(uint64_t task_id, int64_t data) {
