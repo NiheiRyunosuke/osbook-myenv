@@ -96,6 +96,7 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
   Terminal* terminal = new Terminal;
   layer_manager->Move(terminal->LayerID(), { 100, 200 });
   active_layer->Activate(terminal->LayerID());
+  layer_task_map->insert(std::make_pair(terminal->LayerID(), task_id));
   __asm__("sti");
   while (true) {
     __asm__("cli");
