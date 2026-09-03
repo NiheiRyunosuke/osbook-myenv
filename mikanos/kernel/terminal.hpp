@@ -14,6 +14,7 @@ class Terminal {
     Terminal();
     unsigned int LayerID() const { return layer_id_; }
     Rectangle<int> BlinkCursor();
+    Rectangle<int> InputKey(uint8_t modifier, uint8_t keycode, char ascii);
 
   private:
     std::shared_ptr<ToplevelWindow> window_;
