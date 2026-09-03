@@ -17,6 +17,8 @@ Terminal::Terminal() {
     .SetWindow(window_)
     .SetDraggable(true)
     .ID();
+
+  print(">");
 }
 
 Rectangle<int> Terminal::BlinkCursor() {
