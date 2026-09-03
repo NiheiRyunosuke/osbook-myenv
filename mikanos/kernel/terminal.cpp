@@ -23,15 +23,12 @@ Rectangle<int> Terminal::BlinkCursor() {
   cursor_visible_ = !cursor_visible_;
   DrawCursor(cursor_visible_);
 
-  return {ToplevelWindow::kTopLeftMargin +
-            Vector2D<int>{4 + 8*cursor_.x, 5 + 16*cursor_.y},
-          {7, 15}};
+  return {CalcCursorPos(), {7, 15}};
 }
 
 void Terminal::DrawCursor(bool visible) {
   const auto color = visible ? ToColor(0xffffff) : ToColor(0);
-  const auto pos = Vector2D<int>{4 + 8*cursor_.x, 5 + 16*cursor_.y};
-  FillRectangle(*window_->InnerWriter(), pos, {7, 15}, color);
+  FillRectangle(*window_->Writer(), CalcCursorPos(), {7, 15}, color);
 }
 
 Vector2D<int> Terminal::CalcCursorPos() const {
@@ -72,6 +69,7 @@ Rectangle<int> Terminal::InputKey(
       linebuf_[linebuf_index_] = ascii;
       ++linebuf_index_;
       WriteAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
+      ++cursor_.x;
     }
   }
 
