@@ -18,7 +18,7 @@ Terminal::Terminal() {
     .SetDraggable(true)
     .ID();
 
-  print(">");
+  Print(">");
 }
 
 Rectangle<int> Terminal::BlinkCursor() {
@@ -88,6 +88,34 @@ void Terminal::Scroll1() {
   window_->Move(ToplevelWindow::kTopLeftMargin + Vector2D<int>{4, 4}, move_src);
   FillRectangle(*window_->InnerWriter(),
                 {4, 4 + 16*cursor_.y}, {8*kColumns, 16}, {0, 0, 0});
+}
+
+void Terminal::Print(const char* s) {
+  DrawCursor(false);
+
+  auto newline = [this]() {
+    cursor_.x = 0;
+    if (cursor_.y < kRows - 1) {
+      ++cursor_.y;
+    } else {
+      Scroll1();
+    }
+  };
+
+  while (*s) {
+    if (*s == '\n') {
+      newline();
+    } else {
+      WriteAscii(*window_->Writer(), CalcCursorPos(), *s, {255, 255, 255});
+      if (cursor_.x == kColumns - 1) {
+        newline();
+      } else {
+        ++cursor_.x;
+      }
+    }
+    ++s;
+  }
+  DrawCursor(true);
 }
 
 void TaskTerminal(uint64_t task_id, int64_t data) {
