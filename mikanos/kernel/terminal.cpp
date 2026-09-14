@@ -48,12 +48,12 @@ Rectangle<int> Terminal::InputKey(
     linebuf_[linebuf_index_] = 0;
     linebuf_index_ = 0;
     cursor_.x = 0;
-    Log(kWarn, "line: %s\n", &linebuf_[0]);
     if (cursor_.y < kRows - 1) {
       ++cursor_.y;
     } else {
       Scroll1();
     }
+    ExecuteLine();
     draw_area.pos = ToplevelWindow::kTopLeftMargin;
     draw_area.size = window_->InnerSize();
   } else if (ascii == '\b') {
