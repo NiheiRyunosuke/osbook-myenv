@@ -2,7 +2,7 @@
 
 #include "font.hpp"
 #include "layer.hpp"
-
+#include "pci.hpp"
 #include "logger.hpp"
 
 Terminal::Terminal() {
@@ -112,7 +112,7 @@ void Terminal::ExecuteLine() {
     for (int i = 0; i < pci::num_device; ++i) {
       const auto& dev = pci::devices[i];
       auto vendor_id = pci::ReadVendorId(dev.bus, dev.device, dev.function);
-      sprintf(s, "%02x:%02x.%d vend=%04x head=%02x class=%02x.%02x.%02x\n"
+      sprintf(s, "%02x:%02x.%d vend=%04x head=%02x class=%02x.%02x.%02x\n",
             dev.bus, dev.device, dev.function, vendor_id, dev.header_type,
             dev.class_code.base, dev.class_code.sub, dev.class_code.interface);
       Print(s);
