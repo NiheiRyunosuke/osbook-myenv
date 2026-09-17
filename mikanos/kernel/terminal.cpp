@@ -19,6 +19,7 @@ Terminal::Terminal() {
     .ID();
 
   Print(">");
+  cmd_history_.resize(8);
 }
 
 Rectangle<int> Terminal::BlinkCursor() {
