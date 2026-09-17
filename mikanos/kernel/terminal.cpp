@@ -162,6 +162,31 @@ void Terminal::Print(const char* s) {
   DrawCursor(true);
 }
 
+Rectangle<int> Terminal::HistoryUpDown(int direction) {
+  if (direction == -1 && cmd_history_index_ >= 0) {
+    --cmd_history_index_;
+  } else if (direction == 1 && cmd_history_index_ + 1 < cmd_history_.size()) {
+    ++cmd_history_index_;
+  }
+  cursor_.x = 1;
+  const auto first_pos = CalcCursorPos();
+
+  Rectangle<int> draw_area{first_pos, {8*(kColumns - 1), 16}};
+  FillRectangle(*window_->Writer(), draw_area.pos, draw_area.size, {0, 0, 0});
+
+  const char* history = "";
+  if (cmd_history_index_ >= 0) {
+    history = &cmd_history_[cmd_history_index_][0];
+  }
+
+  strcpy(&linebuf_[0], history);
+  linebuf_index_ = strlen(history);
+
+  WriteString(*window_->Writer(), first_pos, history, {255, 255, 255});
+  cursor_.x = linebuf_index_ + 1;
+  return draw_area;
+}
+
 void TaskTerminal(uint64_t task_id, int64_t data) {
   __asm__("cli");
   Task& task = task_manager->CurrentTask();
