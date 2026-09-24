@@ -101,4 +101,6 @@ T* GetSectorByCluster(unsigned long cluster) {
  */
 void ReadName(const DirectoryEntry& entry, char* base, char* ext);
 
+static const unsigned long kEndOfClusterchain = 0x0ffffffflu;
+
 } // namespace fat
