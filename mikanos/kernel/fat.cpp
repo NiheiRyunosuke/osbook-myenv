@@ -32,4 +32,17 @@ void ReadName(const DirectoryEntry& entry, char* base, char* ext) {
   }
 }
 
+unsigned long NextCluster(unsigned long cluster) {
+  uintptr_t fat_offset = 
+    boot_volume_image->reserved_sector_count *
+    boot_volume_image->bytes_per_sector;
+  uint32_t* fat = reinterpret_cast<uint32_t*>(
+    reinterpret_cast<uintptr_t>(boot_volume_image) + fat_offset);
+  uint32_t next = fat[cluster];
+  if (next >= 0x0ffffff8ul) {
+    return kEndOfClusterchain;
+  }
+  return next;
+}
+
 } // namespace fat
