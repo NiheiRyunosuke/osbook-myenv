@@ -45,4 +45,22 @@ unsigned long NextCluster(unsigned long cluster) {
   return next;
 }
 
+DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster) {
+  if (directory_cluster == 0) {
+    directory_cluster = boot_volume_image->root_cluster;
+  }
+  while (directory_cluster != kEndOfClusterchain) {
+    auto dir = GetSectorByCluster<DirectoryEntry>(directory_cluster);
+    for (int i = 0; i < bytes_per_cluster / sizeof(DirectoryEntry); ++i) {
+      if (NameIsEqual(dir[i], name)) {
+        return &dir[i];
+      }
+    }
+
+    directory_cluster = NextCluster(directory_cluster);
+  }
+
+  return nullptr;
+}
+
 } // namespace fat
