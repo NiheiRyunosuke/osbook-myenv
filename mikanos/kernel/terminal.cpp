@@ -153,6 +153,31 @@ void Terminal::ExecuteLine() {
       }
       Print(s);
     }
+  } else if (strcmp(command, "cat") == 0) {
+    char s[64];
+
+    auto file_entry = fat::FindFile(first_arg);
+    if (!file_entry) {
+      sprintf(s, "no such file: %s\n", first_arg);
+      Print(s);
+    } else {
+      auto cluster = file_entry->FirstCluster();
+      auto remain_bytes = file_entry->file_size;
+
+      DrawCursor(false);
+      while (cluster != 0 && cluster != fat::kEndOfClusterchain) {
+        char* p = fat::GetSectorByCluster<char>(cluster);
+
+        int i = 0;
+        for (; i < fat::bytes_per_cluster && i < remain_bytes; ++i) {
+          Print(*p);
+          ++p;
+        }
+        remain_bytes -= i;
+        cluster = fat::NextCluster(cluster);
+      }
+      DrawCursor(true);
+    }
   } else if (command[0] != 0) {
     Print("no such command: ");
     Print(command);
