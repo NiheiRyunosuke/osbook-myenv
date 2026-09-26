@@ -5,9 +5,13 @@
 namespace fat {
 
 BPB* boot_volume_image;
+unsigned long bytes_per_cluster;
 
 void Initialize(void* volume_image) {
   boot_volume_image = reinterpret_cast<fat::BPB*>(volume_image);
+  bytes_per_cluster = 
+    static_cast<unsigned long>(boot_volume_image->bytes_per_sector) *
+    boot_volume_image->sectors_per_cluster;
 }
 
 uintptr_t GetClusterAddr(unsigned long cluster) {
