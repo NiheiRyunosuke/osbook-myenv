@@ -185,9 +185,7 @@ void Terminal::ExecuteLine() {
   }
 }
 
-void Terminal::Print(const char* s) {
-  DrawCursor(false);
-
+void Terminal::Print(char c) {
   auto newline = [this]() {
     cursor_.x = 0;
     if (cursor_.y < kRows - 1) {
@@ -197,19 +195,26 @@ void Terminal::Print(const char* s) {
     }
   };
 
-  while (*s) {
-    if (*s == '\n') {
+  if (c == '\n') {
+    newline();
+  } else {
+    WriteAscii(*window_->Writer(), CalcCursorPos(), c, {255, 255, 255});
+    if (cursor_.x == kColumns - 1) {
       newline();
     } else {
-      WriteAscii(*window_->Writer(), CalcCursorPos(), *s, {255, 255, 255});
-      if (cursor_.x == kColumns - 1) {
-        newline();
-      } else {
-        ++cursor_.x;
-      }
+      ++cursor_.x;
     }
+  }
+}
+
+void Terminal::Print(const char* s) {
+  DrawCursor(false);
+
+  while (*s) {
+    Print(*s);
     ++s;
   }
+
   DrawCursor(true);
 }
 
