@@ -1,6 +1,7 @@
 #include "fat.hpp"
 
 #include <cstring>
+#include <cctype>
 
 namespace fat {
 
@@ -65,6 +66,23 @@ DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster) {
   }
 
   return nullptr;
+}
+
+bool NameIsEqual(const DirectoryEntry& entry, const char* name) {
+  unsigned char name83[11];
+  memset(name83, 0x20, sizeof(name83));
+
+  int i = 0;
+  int i83 = 0;
+  for (; name[i] != 0 && i83 < sizeof(name83); ++i, ++i83) {
+    if (name[i] == '.') {
+      i83 = 7;
+      continue;
+    }
+    name83[i83] = toupper(name[i]);
+  }
+
+  return memcmp(entry.name, name83, sizeof(name83)) == 0;
 }
 
 } // namespace fat
