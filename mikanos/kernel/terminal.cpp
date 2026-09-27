@@ -179,9 +179,14 @@ void Terminal::ExecuteLine() {
       DrawCursor(true);
     }
   } else if (command[0] != 0) {
-    Print("no such command: ");
-    Print(command);
-    Print("\n");
+    auto file_entry = fat::FindFile(command);
+    if (!file_entry) {
+      Print("no such command: ");
+      Print(command);
+      Print("\n");
+    } else {
+      ExecuteFile(*file_entry);
+    }
   }
 }
 
