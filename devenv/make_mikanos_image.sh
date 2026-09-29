@@ -18,7 +18,7 @@ then
   MIKANOS_DIR="$HOME/osbook/$1"
 fi
 
-LOADER_EFI="$HOME/edk2/Build/MikanLoaderX64/DEBUG_CLANG38/X64/Loader.efi"
+LOADER_EFI="$HOME/edk2/Build/MikanLoaderX64/DEBUG_CLANGPDB/X64/Loader.efi"
 KERNEL_ELF="$MIKANOS_DIR/kernel/kernel.elf"
 
 $DEVENV_DIR/make_image.sh $DISK_IMG $MOUNT_POINT $LOADER_EFI $KERNEL_ELF
