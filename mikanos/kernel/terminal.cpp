@@ -5,6 +5,7 @@
 #include "pci.hpp"
 #include "logger.hpp"
 #include "fat.hpp"
+#include <elf.h>
 
 namespace {
 
