@@ -6,6 +6,37 @@
 #include "logger.hpp"
 #include "fat.hpp"
 
+namespace {
+
+std::vector<char*> MakeArgVector(char* command, char* first_arg) {
+  std::vector<char*> argv;
+  argv.push_back(command);
+
+  char* p = first_arg;
+  while (true) {
+    while (isspace(p[0])) {
+      ++p;
+    }
+    if (p[0] == 0) {
+      break;
+    }
+    argv.push_back(p);
+
+    while (p[0] != 0 && !isspace(p[0])) {
+      ++p;
+    }
+    if (p[0] == 0) {
+      break;
+    }
+    p[0] = 0;
+    ++p;
+  }
+
+  return argv;
+}
+
+} // namespace end
+
 Terminal::Terminal() {
   window_ = std::make_shared<ToplevelWindow>(
     kColumns * 8 + 8 + ToplevelWindow::kMarginX,
@@ -190,7 +221,7 @@ void Terminal::ExecuteLine() {
   }
 }
 
-void Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry) {
+void Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command, char* first_arg) {
   auto cluster = file_entry.FirstCluster();
   auto remain_bytes = file_entry.file_size;
 
