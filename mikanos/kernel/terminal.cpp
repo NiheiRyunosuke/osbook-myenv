@@ -207,9 +207,25 @@ void Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry) {
     cluster = fat::NextCluster(cluster);
   }
 
-  using Func = void ();
-  auto f = reinterpret_cast<Func*>(&file_buf[0]);
-  f();
+  auto elf_header = reinterpret_cast<Elf64_Ehdr*>(&file_buf[0]);
+  if (memcmp(elf_header->e_ident, "\x7f" "ELF", 4) != 0) {
+    using Func = void ()
+    auto f = reinterpret_cast<Func*>(&file_buf[0]);
+    f();
+    return
+  }
+
+  auto argv = MakeArgVector(command, first_arg);
+
+  auto entry_addr = elf_header->e_entry;
+  entry_addr += reinterpret_cast<uintptr_t>(&file_buf[0]);
+  using Func = int (int, char**);
+  auto f = reinterpret_cast<Func*>(entry_addr);
+  auto ret = f(argv.size(), &argv[0]);
+
+  char s[64];
+  sprintf(s, "app exited. ret = %d\n", ret);
+  Print(s);
 }
 
 void Terminal::Print(char c) {
