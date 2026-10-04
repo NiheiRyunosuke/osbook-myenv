@@ -36,6 +36,11 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   return argv;
 }
 
+Error SetupPageMaps(LinearAddress4Level addr, size_t num_4kpages) {
+  auto pml4_table = reinterpret_cast<PageMapEntry*>(GetCR3());
+  return SetupPageMap(pml4_table, 4, addr, num_4kpages).error;
+}
+
 Error CopyLoadSegments(Elf64_Ehdr* ehdr) {
   auto phdr = GetProgramHeader(ehdr);
   for (int i = 0; i < ehdr->e_phnum; ++i) {
