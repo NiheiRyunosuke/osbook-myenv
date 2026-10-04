@@ -36,6 +36,25 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   return argv;
 }
 
+Error CopyLoadSegments
+
+Error LoadELF(Elf64_Ehdr* ehdr) {
+  if (ehdr->e_type != ET_EXEC) {
+    return MAKE_ERROR(Error::kInvalidFormat);
+  }
+
+  const auto addr_first = GetFirstLoadAddress(ehdr);
+  if (addr_first < 0xffff'8000'0000'0000) {
+    return MAKE_ERROR(Error::kInvalidFormat);
+  }
+
+  if (auto err = CopyLoadSegments(ehdr)) {
+    return err;
+  }
+
+  return MAKE_ERROR(Error::kSuccess);
+}
+
 } // namespace end
 
 Terminal::Terminal() {
@@ -241,10 +260,10 @@ void Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command,
 
   auto elf_header = reinterpret_cast<Elf64_Ehdr*>(&file_buf[0]);
   if (memcmp(elf_header->e_ident, "\x7f" "ELF", 4) != 0) {
-    using Func = void ()
+    using Func = void ();
     auto f = reinterpret_cast<Func*>(&file_buf[0]);
     f();
-    return
+    return;
   }
 
   auto argv = MakeArgVector(command, first_arg);
