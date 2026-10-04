@@ -60,7 +60,7 @@ WithError<size_t> SetupPageMap(
     }
   }
 
-  if (entry_index == 511){
+  if (entry_index == 511) { //9ビットで表せる最大値 = 1つのページマップ内の最後のエントリ番号
     break;
   }
 
