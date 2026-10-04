@@ -36,7 +36,26 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   return argv;
 }
 
-Error CopyLoadSegments
+Error CopyLoadSegments(Elf64_Ehdr* ehdr) {
+  auto phdr = GetProgramHeader(ehdr);
+  for (int i = 0; i < ehdr->e_phnum; ++i) {
+    if (phdr[i].p_type != PT_LOAD) continue;
+
+    LinearAddress4Level dest_addr;
+    dest_addr.value = phdr[i].p_vaddr;
+    const auto num_4kpages = (phdr[i].p_memsz + 4095) / 4096;
+
+    if (auto err = SetupPageMaps(dest_addr, num_4kpages)) {
+      return err;
+    }
+
+    const auto src = reinterpret_cast<uint8_t*>(ehdr) + phdr[i].p_offset;
+    const auto dst = reinterpret_cast<uint8_t*>(phdr[i].p_vaddr);
+    memcpy(dst, src, phdr[i].p_filesz);
+    memset(dst + phdr[i].p_filesz, 0, phdr[i].p_memsz - phdr[i].p_filesz);
+  }
+  return MAKE_ERROR(Error::kSuccess);
+}
 
 Error LoadELF(Elf64_Ehdr* ehdr) {
   if (ehdr->e_type != ET_EXEC) {
