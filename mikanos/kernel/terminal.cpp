@@ -36,6 +36,42 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   return argv;
 }
 
+WithError<size_t> SetupPageMap(
+      PageMapEntry* page_map, int page_map_level, 
+      LinearAddress4Level addr, size_t num_4kpages) {
+  while (num_4kpages > 0) {
+    const auto entry_index = addr.Part(page_map_level);
+
+    auto [ child_map, err ] = SetNewPageMapIfNotPresent(page_map[entry_index]);
+    if (err) {
+      return { num_4kpages, err };
+    }
+    page_map[entry_index].bits.writable = 1;
+
+    if (page_map_level == 1) {
+      --num_4kpages;
+    } else {
+      auto [ num_remain_pages, err ] =
+        SetupPageMap(child_map, page_map_level - 1, addr, num_4kpages);
+      if (err) {
+        return { num_4kpages, err };
+      }
+      num_4kpages = num_remain_pages;
+    }
+  }
+
+  if (entry_index == 511){
+    break;
+  }
+
+  addr.SetPart(page_map_level, entry_index + 1);
+  for(int level = page_map_level - 1; level >= 1; --level) {
+    addr.SetPart(level, 0);
+  }
+
+  return { num_4kpages, MAKE_ERROR(Error::kSuccess) };
+}
+
 Error SetupPageMaps(LinearAddress4Level addr, size_t num_4kpages) {
   auto pml4_table = reinterpret_cast<PageMapEntry*>(GetCR3());
   return SetupPageMap(pml4_table, 4, addr, num_4kpages).error;
