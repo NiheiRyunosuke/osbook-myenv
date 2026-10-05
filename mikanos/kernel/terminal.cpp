@@ -36,6 +36,22 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   return argv;
 }
 
+WithError<PageMapEntry*> SetNewPageMapIfNotPresent(PageMapEntry& entry) {
+  if (entry.bits.present) {
+    return { entry.Pointer(), MAKE_ERROR(Error::kSuccess) };
+  }
+
+  auto [ child_map, err ] = NewPageMap();
+  if (err) {
+    return { nullptr, err };
+  }
+
+  entry.SetPointer(child_map);
+  entry.bits.present = 1;
+
+  return { child_map, MAKE_ERROR(Error::kSuccess) };
+}
+
 WithError<size_t> SetupPageMap(
       PageMapEntry* page_map, int page_map_level, 
       LinearAddress4Level addr, size_t num_4kpages) {
