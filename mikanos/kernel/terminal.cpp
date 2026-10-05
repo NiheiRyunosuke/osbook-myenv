@@ -131,6 +131,43 @@ Error LoadELF(Elf64_Ehdr* ehdr) {
   return MAKE_ERROR(Error::kSuccess);
 }
 
+Error CleanPageMap(PageMapEntry* page_map, int page_map_level) {
+  for (int i = 0; i < 512; ++i) {
+    auto entry = page_map[i];
+    if (!entry.bits.present) {
+      continue;
+    }
+
+    if (page_map_level > 1) {
+      if (auto err = CleanPageMap(entry.Pointer(), page_map_level - 1)) {
+        return err;
+      }
+    }
+
+    const auto entry_addr = reinterpret_cast<uintptr_t>(entry.Pointer());
+    const FrameID map_frame{entry_addr / kBytesPerFrame};
+    if (auto err = memory_manager->Free(map_frame, 1)) {
+      return err;
+    }
+    page_map[i].data = 0;
+  }
+
+  return MAKE_ERROR(Error::kSuccess);
+}
+
+Error CleanPageMaps(LinearAddress4Level addr) {
+  auto pml4_table = reinterpret_cast<PageMapEntry*>(GetCR3());
+  auto pdp_table = pml4_table[addr.parts.pml4].Pointer();
+  pml4_table[addr.parts.pml4].data = 0;
+  if (auto err = CleanPageMap(pdp_table, 3)) {
+    return err;
+  }
+
+  const auto pdp_addr = reinterpret_cast<uintptr_t>(pdp_table);
+  const FrameID pdp_frame{pdp_addr / kBytesPerFrame};
+  return memory_manager->Free(pdp_frame, 1);
+}
+
 } // namespace end
 
 Terminal::Terminal() {
