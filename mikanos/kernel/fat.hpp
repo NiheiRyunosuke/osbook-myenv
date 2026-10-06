@@ -121,4 +121,6 @@ DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster = 0);
 
 bool NameIsEqual(const DirectoryEntry& entry, const char* name);
 
+size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry);
+
 } // namespace fat
