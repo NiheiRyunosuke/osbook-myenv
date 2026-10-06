@@ -1,5 +1,10 @@
 #include <cstring>
 #include <cstdlib>
+#include "../../kernel/graphics.hpp"
+
+auto& printk = *reinterpret_cast<int (*)(const char*, ...)>(0x000000000010b720);
+auto& fill_rect = *reinterpret_cast<decltype(FillRectangle)*>(0x000000000010c930);
+auto& scrn_writer = *reinterpret_cast<decltype(screen_writer)*>(0x000000000024b068);
 
 int stack_ptr;
 long stack[100];
