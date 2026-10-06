@@ -1,11 +1,16 @@
 #include "terminal.hpp"
 
+#include <cstring>
+#include <limits>
+
 #include "font.hpp"
 #include "layer.hpp"
 #include "pci.hpp"
-#include "logger.hpp"
+#include "asmfunc.h"
+#include "elf.hpp"
+#include "memory_manager.hpp"
+#include "paging.hpp"
 #include "fat.hpp"
-#include <elf.h>
 
 namespace {
 
@@ -37,6 +42,33 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
   }
 
   return argv;
+}
+
+Elf64_Phdr* GetProgramHeader(Elf64_Ehdr* ehdr) {
+  return reinterpret_cast<Elf64_Phdr*>(
+      reinterpret_cast<uintptr_t>(ehdr) + ehdr->e_phoff);
+}
+
+uintptr_t GetFirstLoadAddress(Elf64_Ehdr* ehdr) {
+  auto phdr = GetProgramHeader(ehdr);
+  for (int i = 0; i < ehdr->e_phnum; ++i) {
+    if (phdr[i].p_type != PT_LOAD) continue;
+    return phdr[i].p_vaddr;
+  }
+  return 0;
+}
+
+static_assert(kBytesPerFrame >= 4096);
+
+WithError<PageMapEntry*> NewPageMap() {
+  auto frame = memory_manager->Allocate(1);
+  if (frame.error) {
+    return { nullptr, frame.error };
+  }
+
+  auto e = reinterpret_cast<PageMapEntry*>(frame.value.Frame());
+  memset(e, 0, sizeof(uint64_t) * 512);
+  return { e, MAKE_ERROR(Error::kSuccess) };
 }
 
 WithError<PageMapEntry*> SetNewPageMapIfNotPresent(PageMapEntry& entry) {
@@ -98,22 +130,31 @@ Error SetupPageMaps(LinearAddress4Level addr, size_t num_4kpages) {
 
 Error CopyLoadSegments(Elf64_Ehdr* ehdr) {
   auto phdr = GetProgramHeader(ehdr);
+
   for (int i = 0; i < ehdr->e_phnum; ++i) {
     if (phdr[i].p_type != PT_LOAD) continue;
 
     LinearAddress4Level dest_addr;
     dest_addr.value = phdr[i].p_vaddr;
-    const auto num_4kpages = (phdr[i].p_memsz + 4095) / 4096;
+
+    const auto page_offset = phdr[i].p_vaddr & 0xfff;
+    const auto num_4kpages =
+        (page_offset + phdr[i].p_memsz + 4095) / 4096;
 
     if (auto err = SetupPageMaps(dest_addr, num_4kpages)) {
       return err;
     }
 
-    const auto src = reinterpret_cast<uint8_t*>(ehdr) + phdr[i].p_offset;
-    const auto dst = reinterpret_cast<uint8_t*>(phdr[i].p_vaddr);
+    const auto src =
+        reinterpret_cast<uint8_t*>(ehdr) + phdr[i].p_offset;
+    const auto dst =
+        reinterpret_cast<uint8_t*>(phdr[i].p_vaddr);
+
     memcpy(dst, src, phdr[i].p_filesz);
-    memset(dst + phdr[i].p_filesz, 0, phdr[i].p_memsz - phdr[i].p_filesz);
+    memset(dst + phdr[i].p_filesz, 0,
+           phdr[i].p_memsz - phdr[i].p_filesz);
   }
+
   return MAKE_ERROR(Error::kSuccess);
 }
 
@@ -386,6 +427,7 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
   Print(s);
 
   const auto addr_first = GetFirstLoadAddress(elf_header);
+
   if (auto err = CleanPageMaps(LinearAddress4Level{addr_first})) {
     return err;
   }
