@@ -418,6 +418,21 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
     return err;
   }
 
+  LinearAddress4Level stack_frame_addr{0xffff'ffff'ffff'e000};
+  if (auto err = SetupPageMaps(stack_frame_addr, 1)) {
+    return err;
+  }
+
+  auto entry_addr = elf_header->e_entry;
+  CallApp(argc.value, argv, 3 << 3 | 3, entry_addr,
+      stack_frame_addr.value + 4096 - 8);
+
+  /*
+  char s[64];
+  sprintf(s, "app exited. ret = %d\n", ret);
+  Print(s);
+  */
+
   auto entry_addr = elf_header->e_entry;
   using Func = int (int, char**);
   auto f = reinterpret_cast<Func*>(entry_addr);
