@@ -98,6 +98,7 @@ WithError<size_t> SetupPageMap(
       return { num_4kpages, err };
     }
     page_map[entry_index].bits.writable = 1;
+    page_map[entry_index].bits.user = 1;
 
     if (page_map_level == 1) {
       --num_4kpages;
