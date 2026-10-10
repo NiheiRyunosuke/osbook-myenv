@@ -418,6 +418,18 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
     return err;
   }
 
+  LinearAddress4Level args_frame_addr{0xffff'ffff'ffff'f000};
+  if (suto err = SetupPageMaps(args_frame_addr, 1)) {
+    return err;
+  }
+  auto argv = reinterpret_cast<char**>(args_frame_addr.value);
+  int argv_len = 32; // argv = 8x32 = 256 bytes
+  auto argbuf = reinterpret_cast<char**> * argv_len;
+  auto argc = MakeArgVector(command, first_arg, argv, argv_len, argbuf, argbuf_len);
+  if (argc.error) {
+    return argc.error;
+  }
+
   LinearAddress4Level stack_frame_addr{0xffff'ffff'ffff'e000};
   if (auto err = SetupPageMaps(stack_frame_addr, 1)) {
     return err;
