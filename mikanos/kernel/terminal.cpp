@@ -14,11 +14,28 @@
 
 namespace {
 
-std::vector<char*> MakeArgVector(char* command, char* first_arg) {
-  std::vector<char*> argv;
-  argv.push_back(command);
+WithError<int> MakeArgVector(char* command, char* first_arg,
+    char** argv, int argv_len, char* argbuf, int argbuf_len) {
+  int argc = 0;
+  int argbuf_index = 0;
+
+  auto push_to_argv = [&](const char* s) {
+    if (argc >= argv_len || argbuf_index >= argbuf_len) {
+      return MAKE_ERROR(Error::kFull);
+    }
+
+    argv[argc] = &argbuf[argbuf_index];
+    ++argc;
+    strcpy(&argbuf[argbuf_index], s);
+    argbuf_index += strlen(s) + 1;
+    return MAKE_ERROR(Error::kSuccess);
+  };
+
+  if (auto err = push_to_argv(command)) {
+    return { argc, err };
+  }
   if (!first_arg) {
-    return argv;
+    return { argc, MAKE_ERROR(Error::kSuccess) }; 
   }
 
   char* p = first_arg;
@@ -29,19 +46,24 @@ std::vector<char*> MakeArgVector(char* command, char* first_arg) {
     if (p[0] == 0) {
       break;
     }
-    argv.push_back(p);
+    const char* arg = p;
 
     while (p[0] != 0 && !isspace(p[0])) {
       ++p;
     }
-    if (p[0] == 0) {
+    // here: p[0] == 0 || isspace)p[0]
+    const bool is_end = p[0] == 0;
+    p[0] = 0;
+    if (auto err = push_to_argv(arg)) {
+      return { argc, err };
+    }
+    if (is_end) {
       break;
     }
-    p[0] = 0;
     ++p;
   }
 
-  return argv;
+  return { argc, MAKE_ERROR(Error::kSuccess) };
 }
 
 Elf64_Phdr* GetProgramHeader(Elf64_Ehdr* ehdr) {
