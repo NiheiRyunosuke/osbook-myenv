@@ -195,7 +195,8 @@ void TaskManager::Sleep(Task* task) {
   task->SetRunning(false);
 
   if (task == running_[current_level_].front()) {
-    SwitchTask(true);
+    Task* current_task = RotateCurrentRunQueue(true);
+    SwitchContext(&CurrentTask().Context(), &current_task->Context());
     return;
   }
 
