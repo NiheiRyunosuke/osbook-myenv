@@ -48,3 +48,4 @@ const uint16_t kTSS = 5 << 3;
 
 void SetupSegments();
 void InitializeSegmentation();
+void InitializeTSS();
