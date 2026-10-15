@@ -132,6 +132,30 @@ void TaskManager::ChangeLevelRunning(Task* task, int level) {
   }
 }
 
+Task* TaskManager::RotateCurrentRunQueue(bool current_sleep) {
+  auto& level_queue = running_[current_level_];
+  Task* current_task = level_queue.front();
+  level_queue.pop_front();
+  if (!current_sleep) {
+    level_queue.push_back(current_task);
+  }
+  if (level_queue.empty()) {
+    level_changed_ = true;
+  }
+
+  if (level_changed_) {
+    level_changed_ = false;
+    for (int lv = kMaxLevel; lv >= 0; --lv) {
+      if (!running_[lv].empty()) {
+        current_level_ = lv;
+        break;
+      }
+    }
+  }
+
+  return current_task;
+}
+
 TaskManager* task_manager;
 
 void InitializeTask() {
