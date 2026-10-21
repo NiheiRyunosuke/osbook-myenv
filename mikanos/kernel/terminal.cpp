@@ -237,7 +237,7 @@ Error CleanPageMaps(LinearAddress4Level addr) {
 
 } // namespace end
 
-Terminal::Terminal() {
+Terminal::Terminal(uint64_t task_id) : task_id_{task_id} {
   window_ = std::make_shared<ToplevelWindow>(
     kColumns * 8 + 8 + ToplevelWindow::kMarginX,
     kRows * 16 + 8 + ToplevelWindow::kMarginY,
@@ -534,13 +534,16 @@ Rectangle<int> Terminal::HistoryUpDown(int direction) {
   return draw_area;
 }
 
+std::map<uint64_t, Terminal*>* terminals;
+
 void TaskTerminal(uint64_t task_id, int64_t data) {
   __asm__("cli");
   Task& task = task_manager->CurrentTask();
-  Terminal* terminal = new Terminal;
+  Terminal* terminal = new Terminal{task_id};
   layer_manager->Move(terminal->LayerID(), { 100, 200 });
   active_layer->Activate(terminal->LayerID());
   layer_task_map->insert(std::make_pair(terminal->LayerID(), task_id));
+  (*terminals)[task_id] = terminal;
   __asm__("sti");
   while (true) {
     __asm__("cli");
