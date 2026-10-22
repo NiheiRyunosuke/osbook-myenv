@@ -274,6 +274,8 @@ SyscallEntry:  ; void SyscallEntry(void);
     push rcx  ; original RIP
     push r11  ; original RFLAGS
 
+    push rax  ; システムコール番号を保存
+
     mov rcx, r10
     and eax, 0x7fffffff
     mov rbp, rsp
@@ -284,6 +286,10 @@ SyscallEntry:  ; void SyscallEntry(void);
     ; raxは戻り値専用なので呼び出し側で保存しない
 
     mov rsp, rbp
+
+    pop rsi  ; システムコール番号を復帰
+    cmp esi, 0x80000002
+    je  .exit
 
     pop r11
     pop rcx
