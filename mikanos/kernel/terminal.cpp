@@ -498,15 +498,36 @@ void Terminal::Print(char c) {
   }
 }
 
-void Terminal::Print(const char* s) {
+void Terminal::Print(const char* s, std::optional<size_t> len) {
+  const auto cursor_before = CalcCursorPos();
   DrawCursor(false);
 
-  while (*s) {
-    Print(*s);
-    ++s;
+  if (len) {
+    for (size_t i = 0; i < *len; ++i) {
+      Print(*s);
+      ++s;
+    }
+  } else {
+    while (*s) {
+      Print(*s);
+      ++s;
+    }
   }
 
   DrawCursor(true);
+  const auto cursor_after = CalcCursorPos();
+
+  Vector2D<int> draw_pos{ToplevelWindow::kTopLeftMargin.x, cursor_before.y};
+  Vector2D<int> draw_size{window_->InnerSize().x,
+                          cursor_after.y - cursor_before.y + 16};
+
+  Rectangle<int> draw_area{draw_pos, draw_size};
+
+  Message msg = MakeLayerMessage(
+      task_id_, LayerID(), LayerOperation::DrawArea, draw_area);
+  __asm__("cli");
+  task_manager->SendMessage(1, msg);
+  __asm__("sti");
 }
 
 Rectangle<int> Terminal::HistoryUpDown(int direction) {
