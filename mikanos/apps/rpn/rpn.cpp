@@ -18,7 +18,7 @@ void Push(long value) {
 
 extern "C" void SyscallExit(int exit_code);
 
-extern "C" int main(int argc, char** argv) {
+extern "C" void main(int argc, char** argv) {
   stack_ptr = -1;
 
   for (int i = 1; i < argc; ++i) {
