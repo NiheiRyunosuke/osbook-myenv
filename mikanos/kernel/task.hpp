@@ -31,6 +31,7 @@ class Task {
     Task(uint64_t id);
     Task& InitContext(TaskFunc* f, int64_t data);
     TaskContext& Context();
+    uint64_t& OSStackPointer();
     uint64_t ID() const;
     Task& Sleep();
     Task& Wakeup();
@@ -43,6 +44,7 @@ class Task {
     uint64_t id_;
     std::vector<uint64_t> stack_;
     alignas(16) TaskContext context_;
+    uint64_t os_stack_ptr_;
     std::deque<Message> msgs_;
     unsigned int level_{kDefaultLevel};
     bool running_{false};
@@ -60,7 +62,7 @@ class TaskManager {
 
     TaskManager();
     Task& NewTask();
-    void SwitchTask(bool current_sleep = false);
+    void SwitchTask(const TaskContext& current_ctx);
 
     void Sleep(Task* task);
     Error Sleep(uint64_t id);
@@ -76,6 +78,7 @@ class TaskManager {
     int current_level_{kMaxLevel};
     bool level_changed_{false};
     void ChangeLevelRunning(Task* task, int level);
+    Task* RotateCurrentRunQueue(bool current_sleep);
 };
 
 extern TaskManager* task_manager;
