@@ -172,18 +172,23 @@ RestoreContext:  ; void RestoreContext(void* task_context);
 
     mov rdi, [rdi + 0x60]
 
-; #@@range_begin(restore_ctx_ret)
     o64 iret
-; #@@range_end(restore_ctx_ret)
 
 global CallApp
 CallApp:  ; void CallApp(int argc, char** argv, uint16_t cs, uint16_t ss, uint64_t rip, uint64_t rsp);
+    push rbx
     push rbp
-    mov rbp, rsp
-    push rcx  ; SS
-    push r9   ; RSP
+    push r12
+    push r13
+    push r14
+    push r15
+    mov [r9], rsp  ; OS 用のスタックポインタを保存
+
+    push rdx  ; SS
+    push r8   ; RSP
+    add rdx, 8
     push rdx  ; CS
-    push r8   ; RIP
+    push rcx  ; RIP
     o64 retf
     ; アプリケーションが終了してもここには来ない
 
