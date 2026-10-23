@@ -295,3 +295,16 @@ SyscallEntry:  ; void SyscallEntry(void);
     pop rcx
     pop rbp
     o64 sysret
+
+.exit:
+    mov rsp, rax
+    mov eax, edx
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    pop rbx
+
+    ret  ; CallApp の次の行へ
