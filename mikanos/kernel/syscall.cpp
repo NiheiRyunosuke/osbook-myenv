@@ -50,6 +50,13 @@ SYSCALL(PutString) {
   return { 0, EBADF };
 }
 
+SYSCALL(Exit) {
+  __asm__("cli");
+  auto& task = task_manager->CurrentTask();
+  __asm__("sti");
+  return { task.OSStackPointer(),static_cast<int>(arg1) };
+}
+
 #undef SYSCALL
 
 } // namespace syscall
