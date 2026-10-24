@@ -54,7 +54,25 @@ SYSCALL(Exit) {
   __asm__("cli");
   auto& task = task_manager->CurrentTask();
   __asm__("sti");
-  return { task.OSStackPointer(),static_cast<int>(arg1) };
+  return { task.OSStackPointer(), static_cast<int>(arg1) };
+}
+
+SYSCALL(OpenWindow) {
+  const int w = arg1, h = arg2, x = arg3, y = arg4;
+  const auto title = reinterpret_cast<const char*>(arg5);
+  const auto win = std::make_shared<ToplevelWindow>(
+      w, h, screen_config.pixel_format, title);
+
+  __asm__("cli");
+  const auto layer_id = layer_manager->NewLayer()
+    .SetWindow(win)
+    .SetDraggable(true)
+    .Move({x, y})
+    .ID();
+  active_layer->Activate(layer_id);
+  __asm__("sti");
+
+  return { layer_id, 0 };
 }
 
 #undef SYSCALL
@@ -67,6 +85,7 @@ extern "C" std::array<SyscallFuncType*, 3> syscall_table{
   /* 0x00 */ syscall::LogString,
   /* 0x01 */ syscall::PutString,
   /* 0x02 */ syscall::Exit,
+  /* 0x03 */ syscall::OpenWindow,
 };
 
 void InitializeSyscall() {
