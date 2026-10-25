@@ -15,11 +15,13 @@ struct SyscallResult {
   int error;
 };
 
-SyscallResult SyscallLogString(LogLevel level, const char* message);
-SyscallResult SyscallPutString(int fd, const char* s, size_t len);
+struct SyscallResult SyscallLogString(enum LogLevel level, const char* message);
+struct SyscallResult SyscallPutString(int fd, const char* s, size_t len);
 void SyscallExit(int exit_code);
-SyscallResult SyscallOpenWindow(int w, int h, int x, int y, const char* title);
-SyscallResult SyscallWinWriteString(unsigned int layer_id, int x, int y, uint32_t color, const char* s);
+struct SyscallResult SyscallOpenWindow(int w, int h, int x, int y, const char* title);
+struct SyscallResult SyscallWinWriteString(unsigned int layer_id, int x, int y, uint32_t color, const char* s);
+struct SyscallResult SyscallWinFillRectangle(
+    unsigned int layer_id, int x, int y, int w, int h, uint32_t color);
 
 #ifdef __cplusplus
 } // extern "C"
