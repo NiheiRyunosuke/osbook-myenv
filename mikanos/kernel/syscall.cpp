@@ -9,6 +9,7 @@
 #include "logger.hpp"
 #include "task.hpp"
 #include "terminal.hpp"
+#include "font.hpp"
 
 namespace syscall {
   struct Result {
