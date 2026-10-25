@@ -1,8 +1,14 @@
+#ifdef __cplusplus
 #include <cstddef>
 #include <cstdint>
-#include "../kernel/logger.hpp"
 
 extern "C" {
+#else
+#include <stddef.h>
+#include <stdint.h>
+#endif
+
+#include "../kernel/logger.hpp"
 
 struct SyscallResult {
   uint64_t value;
@@ -14,4 +20,7 @@ SyscallResult SyscallPutString(int fd, const char* s, size_t len);
 void SyscallExit(int exit_code);
 SyscallResult SyscallOpenWindow(int w, int h, int x, int y, const char* title);
 SyscallResult SyscallWinWriteString(unsigned int layer_id, int x, int y, uint32_t color, const char* s);
+
+#ifdef __cplusplus
 } // extern "C"
+#endif
