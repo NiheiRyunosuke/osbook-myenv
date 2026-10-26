@@ -33,13 +33,5 @@ extern "C" void main(int argc, char** argv) {
          num_stars,
          (tick_end.value - tick_start) * 1000 / timer_freq);
 
-  std::default_random_engine rand_engine;
-  std::uniform_int_distribution x_dist(0, kWidth - 2), y_dist(0, kHeight - 2);
-  for (int i = 0; i < num_stars; ++i) {
-    int x = x_dist(rand_engine);
-    int y = y_dist(rand_engine);
-    SyscallWinFillRectangle(layer_id, 4 + x, 24 + y, 2, 2, 0xfff100);
-  }
-
   exit(0);
 }
