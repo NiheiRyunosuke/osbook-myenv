@@ -10,7 +10,7 @@
 #include "task.hpp"
 #include "terminal.hpp"
 #include "font.hpp"
-#include "timer.cpp"
+#include "timer.hpp"
 
 namespace syscall {
   struct Result {
