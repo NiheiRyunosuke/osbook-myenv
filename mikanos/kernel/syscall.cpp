@@ -197,6 +197,7 @@ SYSCALL(CloseWindow) {
   active_layer->Activate(0);
   layer_manager->RemoveLayer(layer_id);
   layer_manager->Draw({layer_pos, win_size});
+  layer_task_map->erase(layer_id);
   __asm__("sti");
 
   return { 0, 0 };
