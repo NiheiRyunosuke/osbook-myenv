@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "error.hpp"
+#include "../error.hpp"
 
 namespace usb {
   enum class EndpointType {

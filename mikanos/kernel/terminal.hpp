@@ -3,7 +3,6 @@
 #include <deque>
 #include <map>
 #include <optional>
-
 #include "window.hpp"
 #include "task.hpp"
 #include "layer.hpp"
@@ -39,7 +38,6 @@ class Terminal {
       const fat::DirectoryEntry& file_entry,
       char* command,
       char* first_arg);
-    void Print(const char* s);
     void Print(char c);
 
     std::deque<std::array<char, kLineMax>> cmd_history_{};

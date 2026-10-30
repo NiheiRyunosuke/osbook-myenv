@@ -7,6 +7,7 @@
 #include "interrupt.hpp"
 
 #include "asmfunc.h"
+#include "font.hpp"
 #include "segment.hpp"
 #include "timer.hpp"
 #include "task.hpp"
@@ -34,11 +35,6 @@ namespace {
   void IntHandlerXHCI(InterruptFrame* frame) {
     task_manager->SendMessage(1, Message{Message::kInterruptXHCI});
     NotifyEndOfInterrupt();
-  }
-
-  __attribute__((interrupt))
-  void IntHandlerLAPICTimer(InterruptFrame* frame) {
-    LAPICTimerOnInterrupt();
   }
 
   void PrintHex(uint64_t value, int width, Vector2D<int> pos) {
@@ -109,7 +105,12 @@ void InitializeInterrupt() {
                 kKernelCS);
   };
   set_idt_entry(InterruptVector::kXHCI, IntHandlerXHCI);
-  set_idt_entry(InterruptVector::kLAPICTimer, IntHandlerLAPICTimer);
+  SetIDTEntry(idt[InterruptVector::kLAPICTimer],
+            MakeIDTAttr(DescriptorType::kInterruptGate, 0 /* DPL */,
+                        true /* present */, kISTForTimer /* IST */),
+            reinterpret_cast<uint64_t>(IntHandlerLAPICTimer),
+            kKernelCS);
+
   set_idt_entry(0,  IntHandlerDE);
   set_idt_entry(1,  IntHandlerDB);
   set_idt_entry(3,  IntHandlerBP);

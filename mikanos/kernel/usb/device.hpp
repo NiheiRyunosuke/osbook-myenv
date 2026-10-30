@@ -8,7 +8,7 @@
 
 #include <array>
 
-#include "error.hpp"
+#include "../error.hpp"
 #include "usb/setupdata.hpp"
 #include "usb/endpoint.hpp"
 #include "usb/arraymap.hpp"

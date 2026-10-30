@@ -75,6 +75,8 @@ SYSCALL(OpenWindow) {
     .Move({x, y})
     .ID();
   active_layer->Activate(layer_id);
+  const auto task_id = task_manager->CurrentTask().ID();
+  layer_task_map->insert(std::make_pair(layer_id, task_id));
   __asm__("sti");
 
   return { layer_id, 0 };

@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include "asmfunc.h"
 #include "logger.hpp"
 
 namespace {
@@ -21,6 +22,10 @@ uint8_t SumBytes<uint8_t>(const uint8_t* data, size_t bytes) {
 }
 
 }  // namespace
+
+namespace acpi {
+
+const FADT* fadt;
 
 bool RSDP::IsValid() const {
   if (strncmp(this->signature, "RSD PTR ", 8) != 0) {
@@ -103,3 +108,5 @@ void WaitMilliseconds(unsigned long msec) {
   }
   while (IoIn32(fadt->pm_tmr_blk) < end);
 }
+
+}  // namespace acpi
