@@ -1,8 +1,8 @@
 #include "task.hpp"
 
 #include "asmfunc.h"
-#include "timer.hpp"
 #include "segment.hpp"
+#include "timer.hpp"
 
 namespace {
   template <class T, class U>
@@ -30,6 +30,7 @@ Task& Task::InitContext(TaskFunc* f, int64_t data) {
   context_.cs = kKernelCS;
   context_.ss = kKernelSS;
   context_.rsp = (stack_end & ~0xflu) - 8;
+
   context_.rip = reinterpret_cast<uint64_t>(f);
   context_.rdi = id_;
   context_.rsi = data;
@@ -104,6 +105,75 @@ void TaskManager::SwitchTask(const TaskContext& current_ctx) {
   }
 }
 
+void TaskManager::Sleep(Task* task) {
+  if (!task->Running()) {
+    return;
+  }
+
+  task->SetRunning(false);
+
+  if (task == running_[current_level_].front()) {
+    Task* current_task = RotateCurrentRunQueue(true);
+    SwitchContext(&CurrentTask().Context(), &current_task->Context());
+    return;
+  }
+
+  Erase(running_[task->Level()], task);
+}
+
+Error TaskManager::Sleep(uint64_t id) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [id](const auto& t){ return t->ID() == id; });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  Sleep(it->get());
+  return MAKE_ERROR(Error::kSuccess);
+}
+
+void TaskManager::Wakeup(Task* task, int level) {
+  if (task->Running()) {
+    ChangeLevelRunning(task, level);
+    return;
+  }
+
+  if (level < 0) {
+    level = task->Level();
+  }
+
+  task->SetLevel(level);
+  task->SetRunning(true);
+
+  running_[level].push_back(task);
+  if (level > current_level_) {
+    level_changed_ = true;
+  }
+  return;
+}
+
+Error TaskManager::Wakeup(uint64_t id, int level) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [id](const auto& t){ return t->ID() == id; });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  Wakeup(it->get(), level);
+  return MAKE_ERROR(Error::kSuccess);
+}
+
+Error TaskManager::SendMessage(uint64_t id, const Message& msg) {
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [id](const auto& t){ return t->ID() == id; });
+  if (it == tasks_.end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  (*it)->SendMessage(msg);
+  return MAKE_ERROR(Error::kSuccess);
+}
+
 Task& TaskManager::CurrentTask() {
   return *running_[current_level_].front();
 }
@@ -167,75 +237,11 @@ void InitializeTask() {
 
   __asm__("cli");
   timer_manager->AddTimer(
-    Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
+      Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
   __asm__("sti");
 }
 
-void TaskManager::Wakeup(Task* task, int level) {
-  if (task->Running()) {
-    ChangeLevelRunning(task, level);
-    return;
-  }
-
-  if (level < 0) {
-    level = task->Level();
-  }
-
-  task->SetLevel(level);
-  task->SetRunning(true);
-
-  running_[level].push_back(task);
-  if (level > current_level_) {
-    level_changed_ = true;
-  }
-  return;
-}
-
-void TaskManager::Sleep(Task* task) {
-  if (!task->Running()) {
-    return;
-  }
-
-  task->SetRunning(false);
-
-  if (task == running_[current_level_].front()) {
-    Task* current_task = RotateCurrentRunQueue(true);
-    SwitchContext(&CurrentTask().Context(), &current_task->Context());
-    return;
-  }
-
-  Erase(running_[task->Level()], task);
-}
-
-Error TaskManager::Sleep(uint64_t id) {
-  auto it = std::find_if(tasks_.begin(), tasks_.end(),
-                        [id](const auto& t){ return t->ID() == id; });
-  if (it == tasks_.end()) {
-    return MAKE_ERROR(Error::kNoSuchTask);
-  }
-
-  Sleep(it->get());
-  return MAKE_ERROR(Error::kSuccess);
-}
-
-Error TaskManager::Wakeup(uint64_t id, int level) {
-  auto it = std::find_if(tasks_.begin(), tasks_.end(),
-                        [id](const auto& t){ return t->ID() == id; });
-  if (it == tasks_.end()) {
-    return MAKE_ERROR(Error::kNoSuchTask);
-  }
-
-  Wakeup(it->get(), level);
-  return MAKE_ERROR(Error::kSuccess);
-}
-
-Error TaskManager::SendMessage(uint64_t id, const Message& msg) {
-  auto it = std::find_if(tasks_.begin(), tasks_.end(),
-                        [id](const auto& t){ return t->ID() == id; });
-  if (it == tasks_.end()) {
-    return MAKE_ERROR(Error::kNoSuchTask);
-  }
-
-  (*it)->SendMessage(msg);
-  return MAKE_ERROR(Error::kSuccess);
+__attribute__((no_caller_saved_registers))
+extern "C" uint64_t GetCurrentTaskOSStackPointer() {
+  return task_manager->CurrentTask().OSStackPointer();
 }
