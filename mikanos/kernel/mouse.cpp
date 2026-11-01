@@ -115,7 +115,7 @@ void Mouse::OnInterrupt(uint8_t buttons, int8_t displacement_x, int8_t displacem
   }
 
   if (drag_layer_id_ == 0) {
-    SendMouseMessage(newpos, posdiff, buttons);
+    SendMouseMessage(newpos, posdiff, buttons, previous_buttons_);
   }
 
   previous_buttons_ = buttons;
