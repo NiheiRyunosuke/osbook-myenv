@@ -98,7 +98,10 @@ void Mouse::OnInterrupt(uint8_t buttons, int8_t displacement_x, int8_t displacem
   if (!previous_left_pressed && left_pressed) {
     auto layer = layer_manager->FindLayerByPosition(position_, layer_id_);
     if (layer && layer->IsDraggable()) {
-      drag_layer_id_ = layer->ID();
+      const auto y_layer = position_.y - layer->GetPosition().y;
+      if (y_layer < ToplevelWindow::kTopLeftMargin.y) {
+        drag_layer_id_ = layer->ID();
+      }
       active_layer->Activate(layer->ID());
     } else {
       active_layer->Activate(0);
