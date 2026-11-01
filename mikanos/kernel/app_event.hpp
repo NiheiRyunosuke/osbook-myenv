@@ -8,6 +8,7 @@ struct AppEvent {
   enum Type {
     kQuit,
     kMouseMove,
+    kMouseButton,
   } type;
 
   union {
