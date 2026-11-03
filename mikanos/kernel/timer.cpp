@@ -74,7 +74,7 @@ bool TimerManager::Tick() {
     Message m{Message::kTimerTimeout};
     m.arg.timer.timeout = t.Timeout();
     m.arg.timer.value = t.Value();
-    task_manager->SendMessage(1, m);
+    task_manager->SendMessage(t.TaskID(), m);
 
     timers_.pop();
   }
