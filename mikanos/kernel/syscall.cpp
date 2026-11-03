@@ -255,6 +255,14 @@ SYSCALL(ReadEvent) {
       app_events[i].arg.mouse_button.button = msg->arg.mouse_button.button;
       ++i;
       break;
+    case Message::kTimerTimeout:
+      if (msg->arg.timer.value < 0) {
+        app_events[i].type = AppEvent::kTimerTimeout;
+        app_events[i].arg.timer.timeout = msg->arg.timer.timeout;
+        app_events[i].arg.timer.value = -msg->arg.timer.value;
+        ++i;
+      }
+      break;
     default:
       Log(kInfo, "uncaught event type: %u\n", msg->type);
     }
