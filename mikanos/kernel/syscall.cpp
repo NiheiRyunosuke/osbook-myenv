@@ -291,7 +291,7 @@ SYSCALL(CreateTimer) {
 
 using SyscallFuncType = syscall::Result (uint64_t, uint64_t, uint64_t,
                                          uint64_t, uint64_t, uint64_t);
-extern "C" std::array<SyscallFuncType*, 0xb> syscall_table{
+extern "C" std::array<SyscallFuncType*, 0xc> syscall_table{
   /* 0x00 */ syscall::LogString,
   /* 0x01 */ syscall::PutString,
   /* 0x02 */ syscall::Exit,
@@ -303,6 +303,7 @@ extern "C" std::array<SyscallFuncType*, 0xb> syscall_table{
   /* 0x08 */ syscall::WinDrawLine,
   /* 0x09 */ syscall::CloseWindow,
   /* 0x0a */ syscall::ReadEvent,
+  /* 0x0b */ syscall::CreateTimer,
 };
 
 void InitializeSyscall() {
