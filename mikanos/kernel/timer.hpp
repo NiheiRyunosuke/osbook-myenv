@@ -12,14 +12,16 @@ uint32_t LAPICTimerElapsed();
 void StopLAPICTimer();
 
 class Timer {
-  public:
-    Timer(unsigned long timeout, int value);
-    unsigned long Timeout() const { return timeout_; }
-    int Value() const { return value_; }
+ public:
+  Timer(unsigned long timeout, int value, uint64_t task_id);
+  unsigned long Timeout() const { return timeout_; }
+  int Value() const { return value_; }
+  uint64_t TaskID() const { return task_id_; }
 
-  private:
-    unsigned long timeout_;
-    int value_;
+ private:
+  unsigned long timeout_;
+  int value_;
+  uint64_t task_id_;
 };
 
 /** @brief タイマー優先度を比較する。タイムアウトが遠いほど優先度低。 */
