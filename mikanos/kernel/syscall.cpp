@@ -263,6 +263,28 @@ SYSCALL(ReadEvent) {
   return { i, 0 };
 }
 
+SYSCALL(CreateTimer) {
+  const unsigned int mode = arg1;
+  const int timer_value = arg2;
+  if (timer_value <= 0) {
+    return { 0, EINVAL };
+  }
+
+  __asm__("cli");
+  const uint64_t task_id = task_manager->CurrentTask().ID();
+  __asm__("sti");
+
+  unsigned long timeout = arg3 * kTimerFreq / 1000;
+  if (mode & 1) { // relative
+    timeout += timer_manager->CurrentTick();
+  }
+
+  __asm__("cli");
+  timer_manager->AddTimer(Timer{timeout, -timer_value, task_id});
+  __asm__("sti");
+  return { timeout * 1000 / kTimerFreq, 0 };
+}
+
 #undef SYSCALL
 
 } // namespace syscall
