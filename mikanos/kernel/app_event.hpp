@@ -9,6 +9,7 @@ struct AppEvent {
     kQuit,
     kMouseMove,
     kMouseButton,
+    kTimerTimeout,
   } type;
 
   union {
