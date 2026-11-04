@@ -29,6 +29,14 @@ struct AppEvent {
       unsigned long timeout;
       int value;
     } timer;
+    
+    struct {
+      uint8_t modifier;
+      uint8_t keycode;
+      char ascii;
+      int press; // 1: press, 0: release
+    } keypush;
+    
   } arg;
 };
 
