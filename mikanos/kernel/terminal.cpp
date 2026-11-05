@@ -436,6 +436,14 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
     return MAKE_ERROR(Error::kSuccess);
   }
 
+  __asm__("cli");
+  auto& task = task_manager->CurrentTask();
+  __asm__("sti");
+
+  if (auto pml4 = SetupPML4(task); pml4.error) {
+    return pml4.error;
+  }
+
   if (auto err = LoadELF(elf_header)) {
     return err;
   }
@@ -457,10 +465,6 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
   if (auto err = SetupPageMaps(stack_frame_addr, 1)) {
     return err;
   }
-
-  __asm__("cli");
-  auto& task = task_manager->CurrentTask();
-  __asm__("sti");
 
   auto entry_addr = elf_header->e_entry;
   int ret = CallApp(argc.value, argv, 3 << 3 | 3, entry_addr,
