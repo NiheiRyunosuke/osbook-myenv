@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "console.hpp"
 #include "logger.hpp"
+#include "task.hpp"
 
 namespace {
   template <class T, class U>

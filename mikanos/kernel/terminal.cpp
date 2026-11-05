@@ -11,6 +11,7 @@
 #include "memory_manager.hpp"
 #include "paging.hpp"
 #include "fat.hpp"
+#include "timer.hpp" 
 
 namespace {
 
