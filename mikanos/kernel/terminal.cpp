@@ -251,6 +251,15 @@ WithError<PageMapEntry*> SetupPML4(Task& current_task) {
   return pml4;
 }
 
+Error FreePML4(Task& current_task) {
+  const auto cr3 = current_task.Context().cr3;
+  current_task.Context().cr3 = 0;
+  ResetCR3();
+
+  const FrameID frame{cr3 / kBytesPerFrame};
+  return memory_manager->Free(frame, 1);
+}
+
 } // namespace end
 
 Terminal::Terminal(uint64_t task_id) : task_id_{task_id} {
@@ -494,8 +503,7 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry, char* command
   if (auto err = CleanPageMaps(LinearAddress4Level{addr_first})) {
     return err;
   }
-
-  return MAKE_ERROR(Error::kSuccess);
+  return FreePML4(task);
 }
 
 void Terminal::Print(char c) {
