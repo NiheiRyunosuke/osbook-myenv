@@ -236,6 +236,21 @@ Error CleanPageMaps(LinearAddress4Level addr) {
   return memory_manager->Free(pdp_frame, 1);
 }
 
+WithError<PageMapEntry*> SetupPML4(Task& current_task) {
+  auto pml4 = NewPageMap();
+  if (pml4.error) {
+    return pml4;
+  }
+
+  const auto current_pml4 = reinterpret_cast<PageMapEntry*>(GetCR3());
+  memcpy(pml4.value, current_pml4, 256 * sizeof(uint64_t));
+
+  const auto cr3 = reinterpret_cast<uint64_t>(pml4.value);
+  SetCR3(cr3);
+  current_task.Context().cr3 = cr3;
+  return pml4;
+}
+
 } // namespace end
 
 Terminal::Terminal(uint64_t task_id) : task_id_{task_id} {
