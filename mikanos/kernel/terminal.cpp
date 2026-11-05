@@ -611,6 +611,9 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
         __asm__("sti");
       }
       break;
+    case Message::kWindowActive:
+      window_isactive = msg->arg.window_active.activate;
+      break;
     default:
       break;
     }
