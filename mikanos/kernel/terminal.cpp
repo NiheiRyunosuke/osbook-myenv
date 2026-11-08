@@ -290,8 +290,10 @@ Rectangle<int> Terminal::BlinkCursor() {
 }
 
 void Terminal::DrawCursor(bool visible) {
-  const auto color = visible ? ToColor(0xffffff) : ToColor(0);
-  FillRectangle(*window_->Writer(), CalcCursorPos(), {7, 15}, color);
+  if (show_window_) {
+    const auto color = visible ? ToColor(0xffffff) : ToColor(0);
+    FillRectangle(*window_->Writer(), CalcCursorPos(), {7, 15}, color);
+  }
 }
 
 Vector2D<int> Terminal::CalcCursorPos() const {
@@ -337,7 +339,9 @@ Rectangle<int> Terminal::InputKey(
     if (cursor_.x < kColumns - 1 && linebuf_index_ < kLineMax - 1) {
       linebuf_[linebuf_index_] = ascii;
       ++linebuf_index_;
-      WriteAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
+      if (show_window_) {
+        WriteAscii(*window_->Writer(), CalcCursorPos(), ascii, {255, 255, 255});
+      }
       ++cursor_.x;
     }
   } else if (keycode == 0x51) { // down arrow
