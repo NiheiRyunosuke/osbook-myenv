@@ -141,11 +141,11 @@ WithError<size_t> SetupPageMap(
     addr.SetPart(page_map_level, entry_index + 1);
     for(int level = page_map_level - 1; level >= 1; --level) {
       addr.SetPart(level, 0);
-      }
-
     }
-    return { num_4kpages, MAKE_ERROR(Error::kSuccess) };
   }
+
+  return { num_4kpages, MAKE_ERROR(Error::kSuccess) };
+}
 
 Error SetupPageMaps(LinearAddress4Level addr, size_t num_4kpages) {
   auto pml4_table = reinterpret_cast<PageMapEntry*>(GetCR3());
@@ -387,9 +387,8 @@ void Terminal::ExecuteLine() {
   } else if (strcmp(command, "ls") == 0) {
     auto root_dir_entries = fat::GetSectorByCluster<fat::DirectoryEntry>(
         fat::boot_volume_image->root_cluster);
-    auto entries_per_cluster = 
-        fat::boot_volume_image->bytes_per_sector / sizeof(fat::DirectoryEntry)
-        * fat::boot_volume_image->sectors_per_cluster;
+    auto entries_per_cluster =
+        fat::bytes_per_cluster / sizeof(fat::DirectoryEntry);
     char base[9], ext[4];
     char s[64];
     for (int i = 0; i < entries_per_cluster; ++i) {
@@ -592,8 +591,8 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
   Task& task = task_manager->CurrentTask();
   Terminal* terminal = new Terminal{task_id};
   layer_manager->Move(terminal->LayerID(), { 100, 200 });
-  active_layer->Activate(terminal->LayerID());
   layer_task_map->insert(std::make_pair(terminal->LayerID(), task_id));
+  active_layer->Activate(terminal->LayerID());
   (*terminals)[task_id] = terminal;
   __asm__("sti");
 
