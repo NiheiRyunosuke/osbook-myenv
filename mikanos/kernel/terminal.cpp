@@ -262,20 +262,23 @@ Error FreePML4(Task& current_task) {
 
 } // namespace end
 
-Terminal::Terminal(uint64_t task_id) : task_id_{task_id} {
-  window_ = std::make_shared<ToplevelWindow>(
-    kColumns * 8 + 8 + ToplevelWindow::kMarginX,
-    kRows * 16 + 8 + ToplevelWindow::kMarginY,
-    screen_config.pixel_format,
-    "MikanTerm");
-  DrawTerminal(*window_->InnerWriter(), {0, 0}, window_->InnerSize());
+Terminal::Terminal(uint64_t task_id, bool show_window)
+    : task_id_{task_id}, show_window_{show_window} {
+  if (show_window) {
+    window_ = std::make_shared<ToplevelWindow>(
+        kColumns * 8 + 8 + ToplevelWindow::kMarginX,
+        kRows * 16 + 8 + ToplevelWindow::kMarginY,
+        screen_config.pixel_format,
+        "MikanTerm");
+    DrawTerminal(*window_->InnerWriter(), {0, 0}, window_->InnerSize());
 
-  layer_id_ = layer_manager->NewLayer()
-    .SetWindow(window_)
-    .SetDraggable(true)
-    .ID();
+    layer_id_ = layer_manager->NewLayer()
+      .SetWindow(window_)
+      .SetDraggable(true)
+      .ID();
 
-  Print(">");
+    Print(">");
+  }
   cmd_history_.resize(8);
 }
 
