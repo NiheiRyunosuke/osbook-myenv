@@ -633,7 +633,7 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
     switch (msg->type) {
     case Message::kTimerTimeout:
       add_blink_timer(msg->arg.timer.timeout);
-      if (window_isactive) {
+      if (show_window && window_isactive) {
         const auto area = terminal->BlinkCursor();
         Message msg = MakeLayerMessage(
             task_id, terminal->LayerID(), LayerOperation::DrawArea, area);
@@ -647,11 +647,13 @@ void TaskTerminal(uint64_t task_id, int64_t data) {
         const auto area = terminal->InputKey(msg->arg.keyboard.modifier,
                                              msg->arg.keyboard.keycode,
                                              msg->arg.keyboard.ascii);
-        Message msg = MakeLayerMessage(
-            task_id, terminal->LayerID(), LayerOperation::DrawArea, area);
-        __asm__("cli");
-        task_manager->SendMessage(1, msg);
-        __asm__("sti");
+        if (show_window) {
+          Message msg = MakeLayerMessage(
+              task_id, terminal->LayerID(), LayerOperation::DrawArea, area);
+          __asm__("cli");
+          task_manager->SendMessage(1, msg);
+          __asm__("sti");
+        }
       }
       break;
     case Message::kWindowActive:
