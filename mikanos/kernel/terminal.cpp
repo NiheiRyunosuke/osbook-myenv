@@ -328,7 +328,9 @@ Rectangle<int> Terminal::InputKey(
   } else if (ascii == '\b') {
     if (cursor_.x > 0) {
       --cursor_.x;
-      FillRectangle(*window_->Writer(), CalcCursorPos(), {8, 16}, {0, 0, 0});
+      if (show_window_) {
+        FillRectangle(*window_->Writer(), CalcCursorPos(), {8, 16}, {0, 0, 0});
+      }
       draw_area.pos = CalcCursorPos();
 
       if (linebuf_index_ > 0) {
@@ -378,8 +380,10 @@ void Terminal::ExecuteLine() {
     }
     Print("\n");
   } else if (strcmp(command, "clear") == 0) {
-    FillRectangle(*window_->InnerWriter(),
-                  {4, 4}, {8*kColumns, 16*kRows}, {0, 0, 0});
+    if (show_window_) {
+      FillRectangle(*window_->InnerWriter(),
+                    {4, 4}, {8*kColumns, 16*kRows}, {0, 0, 0});
+    }
     cursor_.y = 0;
   } else if (strcmp(command, "lspci") == 0) {
     char s[64];
@@ -529,7 +533,9 @@ void Terminal::Print(char c) {
   if (c == '\n') {
     newline();
   } else {
-    WriteAscii(*window_->Writer(), CalcCursorPos(), c, {255, 255, 255});
+    if (show_window_) {
+      WriteAscii(*window_->Writer(), CalcCursorPos(), c, {255, 255, 255});
+    }
     if (cursor_.x == kColumns - 1) {
       newline();
     } else {
