@@ -45,12 +45,11 @@ int printk(const char* format, ...) {
   return result;
 }
 
-std::shared_ptr<Window> main_window;
+std::shared_ptr<ToplevelWindow> main_window;
 unsigned int main_window_layer_id;
 void InitializeMainWindow() {
-  main_window = std::make_shared<Window>(
-      160, 52, screen_config.pixel_format);
-  DrawWindow(*main_window->Writer(), "Hello Window");
+  main_window = std::make_shared<ToplevelWindow>(
+      160, 52, screen_config.pixel_format, "Hello Window");
 
   main_window_layer_id = layer_manager->NewLayer()
     .SetWindow(main_window)
@@ -74,7 +73,7 @@ void InitializeTextWindow() {
   text_window_layer_id = layer_manager->NewLayer()
     .SetWindow(text_window)
     .SetDraggable(true)
-    .Move({350, 200})
+    .Move({500, 100})
     .ID();
   
   layer_manager->UpDown(text_window_layer_id, std::numeric_limits<int>::max());
@@ -93,17 +92,21 @@ void InputTextWindow(char c) {
     return;
   }
 
-  auto pos = []() { return Vector2D<int>{8 + 8*text_window_index, 24 + 6}; };
+  auto pos = []() {
+    return Vector2D<int>{4 + 8*text_window_index, 6};
+  };
 
-  const int max_chars = (text_window->Width() -16 ) / 8 - 1;
+  const int max_chars =
+      (text_window->InnerSize().x - 8) / 8 - 1;
   if (c == '\b' && text_window_index > 0) {
     DrawTextCursor(false);
     --text_window_index;
-    FillRectangle(*text_window->Writer(), pos(), {8, 16}, ToColor(0xffffff));
+    FillRectangle(*text_window->InnerWriter(),
+              pos(), {8, 16}, ToColor(0xffffff));
     DrawTextCursor(true);
   } else if (c >= ' ' && text_window_index < max_chars) {
     DrawTextCursor(false);
-    WriteAscii(*text_window->Writer(), pos(), c, ToColor(0));
+    WriteAscii(*text_window->InnerWriter(), pos(), c, ToColor(0));
     ++text_window_index;
     DrawTextCursor(true);
   }
@@ -170,8 +173,8 @@ extern "C" void KernelMainNewStack(
     __asm__("sti");
 
     sprintf(str, "%010lu", tick);
-    FillRectangle(*main_window->Writer(), {24, 28}, {8 * 10, 16}, {0xc6, 0xc6, 0xc6});
-    WriteString(*main_window->Writer(), {24, 28}, str, {0, 0, 0});
+    FillRectangle(*main_window->InnerWriter(), {20, 4}, {8 * 10, 16}, {0xc6, 0xc6, 0xc6});
+    WriteString(*main_window->InnerWriter(), {20, 4}, str, {0, 0, 0});
     layer_manager->Draw(main_window_layer_id);
 
     __asm__("cli");
@@ -197,10 +200,6 @@ extern "C" void KernelMainNewStack(
         textbox_cursor_visible = !textbox_cursor_visible;
         DrawTextCursor(textbox_cursor_visible);
         layer_manager->Draw(text_window_layer_id);
-
-        __asm__("cli");
-        task_manager->SendMessage(task_terminal_id, *msg);
-        __asm__("sti");
       }
       break;
     case Message::kKeyPush:
