@@ -433,6 +433,10 @@ void Terminal::ExecuteLine() {
       }
       DrawCursor(true);
     }
+  } else if (strcmp(command, "noterm") == 0) {
+    task_manager->NewTask()
+      .InitContext(TaskTerminal, reinterpret_cast<int64_t>(first_arg))
+      .Wakeup();
   } else if (command[0] != 0) {
     auto file_entry = fat::FindFile(command);
     if (!file_entry) {
@@ -587,14 +591,26 @@ Rectangle<int> Terminal::HistoryUpDown(int direction) {
 std::map<uint64_t, Terminal*>* terminals;
 
 void TaskTerminal(uint64_t task_id, int64_t data) {
+  const char* command_line = reinterpret_cast<char*>(data);
+  const bool show_window = command_line == nullptr;
+
   __asm__("cli");
   Task& task = task_manager->CurrentTask();
-  Terminal* terminal = new Terminal{task_id};
-  layer_manager->Move(terminal->LayerID(), { 100, 200 });
-  layer_task_map->insert(std::make_pair(terminal->LayerID(), task_id));
-  active_layer->Activate(terminal->LayerID());
+  Terminal* terminal = new Terminal{task_id, show_window};
+  if (show_window) {
+    layer_manager->Move(terminal->LayerID(), {100, 200});
+    layer_task_map->insert(std::make_pair(terminal->LayerID(), task_id));
+    active_layer->Activate(terminal->LayerID());
+  }
   (*terminals)[task_id] = terminal;
   __asm__("sti");
+
+  if (command_line) {
+    for (int i = 0; command_line[i] != '\0'; ++i) {
+      terminal->InputKey(0, 0, command_line[i]);
+    }
+    terminal->InputKey(0, 0, '\n');
+  }
 
   auto add_blink_timer = [task_id](unsigned long t){
     timer_manager->AddTimer(Timer{t + static_cast<int>(kTimerFreq * 0.5),
