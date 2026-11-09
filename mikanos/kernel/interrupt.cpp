@@ -6,6 +6,8 @@
 
 #include "interrupt.hpp"
 
+#include <csignal>
+
 #include "asmfunc.h"
 #include "font.hpp"
 #include "segment.hpp"
