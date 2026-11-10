@@ -25,6 +25,15 @@ off_t lseek(int fd, off_t offset, int whence) {
   return -1;
 }
 
+int open(const char* path, int flags) {
+  struct SyscallResult res = SyscallOpenFile(path, flags);
+  if (res.error == 0) {
+    return res.value;
+  }
+  errno = res.error;
+  return -1;
+}
+
 ssize_t read(int fd, void* buf, size_t count) {
   errno = EBADF;
   return -1;
