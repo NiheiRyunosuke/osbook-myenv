@@ -37,6 +37,14 @@ void ReadName(const DirectoryEntry& entry, char* base, char* ext) {
   }
 }
 
+void FormatName(const DirectoryEntry& entry, char* dest) {
+  char ext[5] = ".";
+  ReadName(entry, dest, &ext[1]);
+  if (ext[1]) {
+    strcat(dest, ext);
+  }
+}
+
 unsigned long NextCluster(unsigned long cluster) {
   uintptr_t fat_offset = 
     boot_volume_image->reserved_sector_count *
