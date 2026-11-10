@@ -2,6 +2,27 @@
 
 #include <cstring>
 #include <cctype>
+#include <utility>
+
+namespace {
+
+// #@@range_begin(next_path_element)
+std::pair<const char*, bool>
+NextPathElement(const char* path, char* path_elem) {
+  const char* next_slash = strchr(path, '/');
+  if (next_slash == nullptr) {
+    strcpy(path_elem, path);
+    return { nullptr, false };
+  }
+
+  const auto elem_len = next_slash - path;
+  strncpy(path_elem, path, elem_len);
+  path_elem[elem_len] = '\0';
+  return { &next_slash[1], true };
+}
+// #@@range_end(next_path_element)
+
+} // namespace
 
 namespace fat {
 
