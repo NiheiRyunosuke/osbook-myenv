@@ -421,10 +421,15 @@ void Terminal::ExecuteLine() {
   } else if (strcmp(command, "cat") == 0) {
     char s[64];
 
-    auto file_entry = fat::FindFile(first_arg);
+    auto [ file_entry, post_slash ] = fat::FindFile(first_arg);
     if (!file_entry) {
       sprintf(s, "no such file: %s\n", first_arg);
       Print(s);
+    } else if (file_entry->attr != fat::Attribute::kDirectory && post_slash) {
+      char name[13];
+      fat::FormatName(*file_entry, name);
+      Print(name);
+      Print(" is not a directory\n");
     } else {
       auto cluster = file_entry->FirstCluster();
       auto remain_bytes = file_entry->file_size;
