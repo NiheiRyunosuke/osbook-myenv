@@ -337,13 +337,27 @@ SYSCALL(OpenFile) {
   return { fd, 0 };
 }
 
+SYSCALL(ReadFile) {
+  const int fd = arg1;
+  void* buf = reinterpret_cast<void*>(arg2);
+  size_t count = arg3;
+  __asm__("cli");
+  auto& task = task_manager->CurrentTask();
+  __asm__("sti");
+
+  if (fd < 0 || task.Files().size() <= fd || !task.Files()[fd]) {
+    return { 0, EBADF };
+  }
+  return { task.Files()[fd]->Read(buf, count), 0 };
+}
+
 #undef SYSCALL
 
 } // namespace syscall
 
 using SyscallFuncType = syscall::Result (uint64_t, uint64_t, uint64_t,
                                          uint64_t, uint64_t, uint64_t);
-extern "C" std::array<SyscallFuncType*, 0xd> syscall_table{
+extern "C" std::array<SyscallFuncType*, 0xe> syscall_table{
   /* 0x00 */ syscall::LogString,
   /* 0x01 */ syscall::PutString,
   /* 0x02 */ syscall::Exit,
@@ -357,6 +371,7 @@ extern "C" std::array<SyscallFuncType*, 0xd> syscall_table{
   /* 0x0a */ syscall::ReadEvent,
   /* 0x0b */ syscall::CreateTimer,
   /* 0x0c */ syscall::OpenFile,
+  /* 0x0d */ syscall::ReadFile,
 };
 
 void InitializeSyscall() {
