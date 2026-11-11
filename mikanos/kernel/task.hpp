@@ -10,6 +10,8 @@
 
 #include "error.hpp"
 #include "message.hpp"
+#include "paging.hpp"
+#include "fat.hpp"
 
 struct TaskContext {
   uint64_t cr3, rip, rflags, reserved1; // offset 0x00
@@ -37,6 +39,8 @@ class Task {
     Task& Wakeup();
     void SendMessage(const Message& msg);
     std::optional<Message> ReceiveMessage();
+    std::vector<std::unique_ptr<fat::FileDescriptor>>& Files();
+
     int Level() const { return level_; }
     bool Running() const { return running_; }
   
