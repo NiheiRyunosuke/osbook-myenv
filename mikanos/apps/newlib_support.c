@@ -35,7 +35,11 @@ int open(const char* path, int flags) {
 }
 
 ssize_t read(int fd, void* buf, size_t count) {
-  errno = EBADF;
+  struct SyscallResult res = SyscallReadFile(fd, buf, count);
+  if (res.error == 0) {
+    return res.value;
+  }
+  errno = res.error;
   return -1;
 }
 
