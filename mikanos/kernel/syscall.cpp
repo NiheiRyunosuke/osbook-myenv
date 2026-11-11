@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cerrno>
 #include <cmath>  
+#include <fcntl.h>
 
 #include "asmfunc.h"
 #include "msr.hpp"
@@ -299,6 +300,19 @@ SYSCALL(CreateTimer) {
   __asm__("sti");
   return { timeout * 1000 / kTimerFreq, 0 };
 }
+
+namespace {
+  size_t AllocateFD(Task& task) {
+    const size_t num_files = task.Files().size();
+    for (size_t i = 0; i < num_files; ++i) {
+      if (!task.Files()[i]) {
+        return i;
+      }
+    }
+    task.Files().emplace_back();
+    return num_files;
+  }
+} // namespace
 
 SYSCALL(OpenFile) {
   const char* path = reinterpret_cast<const char*>(arg1);
