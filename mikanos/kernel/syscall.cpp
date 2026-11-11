@@ -300,13 +300,36 @@ SYSCALL(CreateTimer) {
   return { timeout * 1000 / kTimerFreq, 0 };
 }
 
+SYSCALL(OpenFile) {
+  const char* path = reinterpret_cast<const char*>(arg1);
+  const int flags = arg2;
+  __asm__("cli");
+  auto& task = task_manager->CurrentTask();
+  __asm__("sti");
+
+  if ((flags & O_ACCMODE) == O_WRONLY) {
+    return { 0, EINVAL };
+  }
+
+  auto [ dir, post_slash ] = fat::FindFile(path);
+  if (dir == nullptr) {
+    return { 0, ENOENT };
+  } else if (dir->attr != fat::Attribute::kDirectory && post_slash) {
+    return { 0, ENOENT };
+  }
+
+  size_t fd = AllocateFD(task);
+  task.Files()[fd] = std::make_unique<fat::FileDescriptor>(*dir);
+  return { fd, 0 };
+}
+
 #undef SYSCALL
 
 } // namespace syscall
 
 using SyscallFuncType = syscall::Result (uint64_t, uint64_t, uint64_t,
                                          uint64_t, uint64_t, uint64_t);
-extern "C" std::array<SyscallFuncType*, 0xc> syscall_table{
+extern "C" std::array<SyscallFuncType*, 0xd> syscall_table{
   /* 0x00 */ syscall::LogString,
   /* 0x01 */ syscall::PutString,
   /* 0x02 */ syscall::Exit,
@@ -319,6 +342,7 @@ extern "C" std::array<SyscallFuncType*, 0xc> syscall_table{
   /* 0x09 */ syscall::CloseWindow,
   /* 0x0a */ syscall::ReadEvent,
   /* 0x0b */ syscall::CreateTimer,
+  /* 0x0c */ syscall::OpenFile,
 };
 
 void InitializeSyscall() {
