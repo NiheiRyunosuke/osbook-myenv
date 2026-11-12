@@ -6,7 +6,6 @@
 #include <deque>
 #include <optional>
 #include <vector>
-#include <memory>
 
 #include "error.hpp"
 #include "message.hpp"
@@ -52,7 +51,7 @@ class Task {
     std::deque<Message> msgs_;
     unsigned int level_{kDefaultLevel};
     bool running_{false};
-    std::vector<std::unique_ptr<fat::FileDescriptor>> files_{};
+    std::vector<std::unique_ptr<::FileDescriptor>> files_{};
 
     Task& SetLevel(int level) { level_ = level; return *this; }
     Task& SetRunning(bool running) { running_ = running; return *this; }
