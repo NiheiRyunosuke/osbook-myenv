@@ -17,6 +17,10 @@ int fstat(int fd, struct stat* buf) {
   return -1;
 }
 
+pid_t getpid(void) {
+  return 0;
+}
+
 int isatty(int fd) {
   errno = EBADF;
   return -1;
