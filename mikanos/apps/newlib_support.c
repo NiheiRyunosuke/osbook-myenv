@@ -22,6 +22,11 @@ int isatty(int fd) {
   return -1;
 }
 
+int kill(pid_t pid, int sig) {
+  errno = EPERM;
+  return -1;
+}
+
 off_t lseek(int fd, off_t offset, int whence) {
   errno = EBADF;
   return -1;
