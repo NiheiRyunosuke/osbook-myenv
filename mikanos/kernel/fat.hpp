@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "file.hpp"
+
 namespace fat {
 
 struct BPB {
