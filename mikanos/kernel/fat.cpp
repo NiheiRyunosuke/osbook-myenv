@@ -154,6 +154,18 @@ size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry) {
   return p - buf_uint8;
 }
 
+bool IsEndOfClusterchain(unsigned long cluster) {
+  return cluster >= 0x0ffffff8ul;
+}
+
+uint32_t* GetFAT() {
+  uintptr_t fat_offset =
+    boot_volume_image->reserved_sector_count *
+    boot_volume_image->bytes_per_sector;
+  return reinterpret_cast<uint32_t*>(
+      reinterpret_cast<uintptr_t>(boot_volume_image) + fat_offset);
+}
+
 unsigned long ExtendCluster(unsigned long eoc_cluster, size_t n) {
   uint32_t* fat = GetFAT();
   while (!IsEndOfClusterchain(fat[eoc_cluster])) {
