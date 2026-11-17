@@ -154,6 +154,27 @@ size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry) {
   return p - buf_uint8;
 }
 
+unsigned long ExtendCluster(unsigned long eoc_cluster, size_t n) {
+  uint32_t* fat = GetFAT();
+  while (!IsEndOfClusterchain(fat[eoc_cluster])) {
+    eoc_cluster = fat[eoc_cluster];
+  }
+
+  size_t num_allocated = 0;
+  auto current = eoc_cluster;
+
+  for (unsigned long candidate = 2; num_allocated < n; ++candidate) {
+    if (fat[candidate] != 0) { // candidate cluster is not free
+      continue;
+    }
+    fat[current] = candidate;
+    current = candidate;
+    ++num_allocated;
+  }
+  fat[current] = kEndOfClusterchain;
+  return current;
+}
+
 DirectoryEntry* AllocateEntry(unsigned long dir_cluster) {
   while (true) {
     auto dir = GetSectorByCluster<DirectoryEntry>(dir_cluster);
