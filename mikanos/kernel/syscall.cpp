@@ -312,6 +312,16 @@ namespace {
     task.Files().emplace_back();
     return num_files;
   }
+
+  std::pair<fat::DirectoryEntry*, int> CreateFile(const char* path) {
+    auto [ file, err ] = fat::CreateFile(path);
+    switch (err.Cause()) {
+    case Error::kIsDirectory: return { file, EISDIR };
+    case Error::kNoSuchEntry: return { file, ENOENT };
+    case Error::kNoEnoughMemory: return { file, ENOSPC };
+    default: return { file, 0 };
+    }
+  }
 } // namespace
 
 SYSCALL(OpenFile) {
