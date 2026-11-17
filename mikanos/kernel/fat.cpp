@@ -154,6 +154,27 @@ size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry) {
   return p - buf_uint8;
 }
 
+DirectoryEntry* AllocateEntry(unsigned long dir_cluster) {
+  while (true) {
+    auto dir = GetSectorByCluster<DirectoryEntry>(dir_cluster);
+    for (int i = 0; i < bytes_per_cluster / sizeof(DirectoryEntry); ++i) {
+      if (dir[i].name[0] == 0 || dir[i].name[0] == 0xe5) {
+        return &dir[i];
+      }
+    }
+    auto next = NextCluster(dir_cluster);
+    if (next == kEndOfClusterchain) {
+      break;
+    }
+    dir_cluster = next;
+  }
+
+  dir_cluster = ExtendCluster(dir_cluster, 1);
+  auto dir = GetSectorByCluster<DirectoryEntry>(dir_cluster);
+  memset(dir, 0, bytes_per_cluster);
+  return &dir[0];
+}
+
 WithError<DirectoryEntry*> CreateFile(const char* path) {
   auto parent_dir_cluster = fat::boot_volume_image->root_cluster;
   const char* filename = path;
