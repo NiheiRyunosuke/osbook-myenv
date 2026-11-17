@@ -208,6 +208,23 @@ DirectoryEntry* AllocateEntry(unsigned long dir_cluster) {
   return &dir[0];
 }
 
+void SetFileName(DirectoryEntry& entry, const char* name) {
+  const char* dot_pos = strrchr(name, '.');
+  memset(entry.name, ' ', 8+3);
+  if (dot_pos) {
+    for (int i = 0; i < 8 && i < dot_pos - name; ++i) {
+      entry.name[i] = toupper(name[i]);
+    }
+    for (int i = 0; i < 3 && dot_pos[i + 1]; ++i) {
+      entry.name[8 + i] = toupper(dot_pos[i + 1]);
+    }
+  } else {
+    for (int i = 0; i < 8 && name[i]; ++i) {
+      entry.name[i] = toupper(name[i]);
+    }
+  }
+}
+
 WithError<DirectoryEntry*> CreateFile(const char* path) {
   auto parent_dir_cluster = fat::boot_volume_image->root_cluster;
   const char* filename = path;
