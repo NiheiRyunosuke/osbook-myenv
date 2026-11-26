@@ -39,6 +39,10 @@ class Task {
     void SendMessage(const Message& msg);
     std::optional<Message> ReceiveMessage();
     std::vector<std::unique_ptr<::FileDescriptor>>& Files();
+    uint64_t DPagingBegin() const;
+    void SetDPagingBegin(uint64_t v);
+    uint64_t DPagingEnd() const;
+    void SetDPagingEnd(uint64_t v);
 
     int Level() const { return level_; }
     bool Running() const { return running_; }
@@ -82,6 +86,7 @@ class TaskManager {
     std::array<std::deque<Task*>, kMaxLevel + 1> running_{};
     int current_level_{kMaxLevel};
     bool level_changed_{false};
+
     void ChangeLevelRunning(Task* task, int level);
     Task* RotateCurrentRunQueue(bool current_sleep);
 };
